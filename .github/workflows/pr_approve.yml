@@ -1,0 +1,12 @@
+name: Build on Approval
+
+#This trigger is just for testing, we would probably only want the image built after merge to master or on release
+on:        
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+    build:
+      if: github.event.review.state == 'approved'
+      uses: ./.github/workflows/build.yml
+      secrets: inherit

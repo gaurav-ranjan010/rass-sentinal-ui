@@ -1,0 +1,48 @@
+name: Docker Dev
+
+#This trigger is just for testing, we would probably only want the image built after merge to master or on release
+on:        
+  workflow_call:
+#     secrets:
+#       GITHUB_TOKEN:
+#         required: true
+#       SLACK_URL:
+#         required: true
+
+jobs:
+    docker:
+        runs-on: ubuntu-latest
+        # runs-on: bom-dev-boita
+        steps:
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Docker build
+          uses: docker/build-push-action@v5
+          with:
+            push: false # you'll want this to be true when you have it correctly set up
+            # tags: bomdock.bom.dev.blu.digicert.com/boita:cicd-test
+            # build-args: GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
+            platforms: linux/amd64
+
+        # The following commands require this to be run on a self-hosted runner
+        # - name: Set image in k8s
+        #   run: kubectl set image deployment/boita boita=bomdock.bom.dev.blu.digicert.com/boita:cicd-test -n boita
+
+        # - name: Redeploy
+        #   run: kubectl rollout restart deployment/boita -n boita
+        
+        # - name: Report to slack
+        #   if: success() || failure()
+        #   uses: slackapi/slack-github-action@v1.26.0
+        #   with:
+        #     payload: |
+        #       {
+        #         "repo": "BOITA",
+        #         "status": "${{job.status}}",
+        #         "message": "Github action ran for building and deploying dev image"
+        #       }
+        #   env:
+        #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
