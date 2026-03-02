@@ -1,32 +1,92 @@
-# svelte-ui-template
+# RASS Sentinel
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+**Intelligent Health Score & Risk Detection System**
 
+RASS Sentinel is a lightweight intelligent monitoring layer that turns raw observability data into proactive platform protection.
 
-## Developing
+## What is RASS?
 
-Once you've installed dependencies with `npm install`, start a development server:
+| Component | Description | Metrics Monitored |
+|-----------|-------------|-------------------|
+| **R**eliability | System stability and error handling | Error Rate, P99 Latency |
+| **A**vailability | Uptime and service responsiveness | Uptime %, Request Throughput |
+| **S**calability | Resource utilization and capacity | CPU Usage, Memory Usage |
+| **S**ecurity | Vulnerability and threat indicators | Open CVEs, Security Alerts |
+
+## Features
+
+### 🎯 RASS Score (0-100)
+A single unified health score that combines all four dimensions, giving you instant visibility into overall platform health.
+
+### 📊 Live Telemetry
+Real-time charts showing:
+- Error Rate
+- P99/P50 Latency
+- CPU & Memory Usage
+- Request Throughput
+- Uptime
+
+### ⚠️ Anomaly Detection
+Automatic detection of unusual patterns:
+- Spike detection in metrics
+- Threshold breach alerts
+- Correlation with recent deployments
+
+### 💡 Smart Recommendations
+AI-powered actionable insights:
+- "Error rate exceeded 5% — investigate recent deployment"
+- "CPU sustained above 80% — scale horizontally"
+- "3 new CVEs detected — patch dependencies"
+
+## Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Open http://localhost:5173
 
-To create a production version of your app:
+## Architecture
 
-```bash
-npm run build
+```
+┌─────────────────────────────────────────────────────────┐
+│                    RASS Sentinel UI                      │
+├─────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐ │
+│  │ Health   │  │ Anomaly  │  │ Telemetry│  │ Recom-  │ │
+│  │ Gauge    │  │ Panel    │  │ Charts   │  │ mendations│ │
+│  └──────────┘  └──────────┘  └──────────┘  └─────────┘ │
+├─────────────────────────────────────────────────────────┤
+│                   Svelte Stores                          │
+├─────────────────────────────────────────────────────────┤
+│            Observability Data (Datadog/Prometheus)       │
+└─────────────────────────────────────────────────────────┘
 ```
 
-You can preview the production build with `npm run preview`.
+## Tech Stack
 
-## Using Template
+- **Framework**: SvelteKit 2.0
+- **Language**: TypeScript
+- **Styling**: CSS with dark theme
+- **Charts**: Custom SVG visualizations
+- **State**: Svelte Stores
 
-When you create a new repo for your project, select this as your template. It has the basics to have a UI running in svelte.
+## Why RASS Sentinel?
+
+Instead of reacting to outages, RASS Sentinel helps teams:
+- ✅ Detect risks early
+- ✅ Reduce downtime
+- ✅ Prevent scaling failures
+- ✅ Improve system stability
+- ✅ Make faster decisions
+
+---
+
+**Hackathon 2026** | DigiCert
 
 
 ### Steps for use
