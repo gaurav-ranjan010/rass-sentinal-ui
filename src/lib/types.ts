@@ -108,3 +108,78 @@ export function getCategoryColor(category: string): string {
     default: return '#78909c';
   }
 }
+
+// Splunk Log Types
+export interface SplunkLogEntry {
+  id: string;
+  timestamp: string;
+  service: string;
+  level: 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+  message: string;
+  errorCode?: string;
+  stackTrace?: string;
+  frequency: number; // How many times this error occurred
+  repo?: string;
+  lineNumber?: number;
+}
+
+// Error Inference Types
+export interface ErrorInference {
+  id: string;
+  logId: string;
+  service: string;
+  repo: string;
+  inferredLocation: string;
+  lineNumbers: number[];
+  confidence: 'high' | 'medium' | 'low';
+  rootCause: string;
+  affectedComponent: string;
+  relatedLogs: string[];
+}
+
+// Historical Solution Types
+export interface HistoricalSolution {
+  id: string;
+  errorPattern: string;
+  service: string;
+  solution: string;
+  stepsToResolve: string[];
+  resolvedBy: string;
+  resolvedAt: string;
+  timeToResolve: string;
+  effectiveness: number; // 0-100
+  tags: string[];
+}
+
+// Future Prediction Types
+export interface FuturePrediction {
+  currentRPS: number;
+  predictedRPS: number;
+  currentScore: number;
+  predictedScore: number;
+  breakdown: {
+    reliability: { current: number; predicted: number };
+    availability: { current: number; predicted: number };
+    scalability: { current: number; predicted: number };
+    security: { current: number; predicted: number };
+  };
+  risks: string[];
+  recommendations: string[];
+}
+
+export function getLogLevelColor(level: 'INFO' | 'WARN' | 'ERROR' | 'FATAL'): string {
+  switch (level) {
+    case 'INFO': return '#4caf50';
+    case 'WARN': return '#ff9800';
+    case 'ERROR': return '#f44336';
+    case 'FATAL': return '#d32f2f';
+  }
+}
+
+export function getConfidenceColor(confidence: 'high' | 'medium' | 'low'): string {
+  switch (confidence) {
+    case 'high': return '#4caf50';
+    case 'medium': return '#ff9800';
+    case 'low': return '#ff5722';
+  }
+}

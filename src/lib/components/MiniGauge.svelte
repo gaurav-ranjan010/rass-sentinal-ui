@@ -3,15 +3,15 @@
   import { cubicOut } from 'svelte/easing';
 
   export let score: number;
-  export let label: string;
+  export let label: string = '';
   export let color: string;
-  export let icon: string;
+  export let icon: string = '';
+  export let size: number = 64;
 
   const animatedScore = tweened(0, { duration: 1200, easing: cubicOut });
   $: animatedScore.set(score);
 
-  $: size = 64;
-  $: radius = 26;
+  $: radius = size * 0.4;
   $: circumference = 2 * Math.PI * radius;
   $: progress = ($animatedScore / 100) * circumference;
   $: dashOffset = circumference - progress;

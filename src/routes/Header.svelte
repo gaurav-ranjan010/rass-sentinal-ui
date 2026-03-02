@@ -12,7 +12,7 @@
     <div class="header-left">
       <div class="logo-section">
         <div class="logo-icon">
-          <span class="material-icons">shield</span>
+          <img src="/digicert-logo.png" alt="DigiCert" class="digicert-logo" />
         </div>
         <div class="logo-text">
           <h1>RASS Sentinel</h1>
@@ -77,16 +77,15 @@
   .logo-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #4caf50, #2196f3);
-    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .logo-icon .material-icons {
-    color: white;
-    font-size: 24px;
+  .digicert-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
   }
 
   .logo-text h1 {

@@ -8,7 +8,11 @@
   import TelemetryChart from '$lib/components/TelemetryChart.svelte';
   import MetricDetailModal from '$lib/components/MetricDetailModal.svelte';
   import TelemetryDetailModal from '$lib/components/TelemetryDetailModal.svelte';
-  import { dashboardData, rassScore, anomalies, recommendations, telemetry, refreshData, refreshing } from '$lib/stores';
+  import FuturePrediction from '$lib/components/FuturePrediction.svelte';
+  import ServiceLogAnalysis from '$lib/components/ServiceLogAnalysis.svelte';
+  import ErrorInference from '$lib/components/ErrorInference.svelte';
+  import HistoricalSolutions from '$lib/components/HistoricalSolutions.svelte';
+  import { dashboardData, rassScore, anomalies, recommendations, telemetry, refreshData, refreshing, splunkLogs, errorInferences, historicalSolutions, futurePrediction } from '$lib/stores';
   import { getCategoryColor } from '$lib/types';
   import type { TelemetryMetric } from '$lib/types';
 
@@ -297,6 +301,30 @@
       <RecommendationsPanel recommendations={$recommendations} />
     </div>
   </section>
+
+  <!-- Future Prediction & Log Analysis -->
+  <section class="prediction-section">
+    <h2 class="section-title">
+      <span class="material-icons">auto_graph</span>
+      AI-Powered Insights & Predictions
+    </h2>
+    <div class="prediction-grid">
+      <FuturePrediction prediction={$futurePrediction} />
+      <ServiceLogAnalysis logs={$splunkLogs} />
+    </div>
+  </section>
+
+  <!-- Error Inference & Historical Solutions -->
+  <section class="analysis-section">
+    <h2 class="section-title">
+      <span class="material-icons">troubleshoot</span>
+      Root Cause Analysis & Resolution History
+    </h2>
+    <div class="analysis-grid">
+      <ErrorInference inferences={$errorInferences} />
+      <HistoricalSolutions solutions={$historicalSolutions} />
+    </div>
+  </section>
 </main>
 
 <!-- Metric Detail Modal -->
@@ -517,11 +545,41 @@
 
   .insights-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 1.5rem;
   }
 
-  /* Responsive */
+  /* Prediction Section */
+  .prediction-section {
+    margin-bottom: 2rem;
+  }
+
+  .prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Analysis Section */
+  .analysis-section {
+    margin-bottom: 2rem;
+  }
+
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Responsive - Tablet */
+  @media (max-width: 1200px) {
+    .prediction-grid,
+    .analysis-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Responsive - Large Mobile */
   @media (max-width: 900px) {
     .hero-content {
       flex-direction: column;
@@ -536,25 +594,72 @@
     .insights-grid {
       grid-template-columns: 1fr;
     }
+
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
+  /* Responsive - Mobile */
   @media (max-width: 600px) {
     .dashboard {
-      padding: 1rem;
+      padding: 0.75rem;
     }
 
     .top-bar {
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.75rem;
       text-align: center;
+      padding: 0.5rem;
+    }
+
+    .status-info {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .refresh-section {
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
     .component-scores {
       grid-template-columns: 1fr;
     }
 
+    .metrics-grid {
+      grid-template-columns: 1fr;
+    }
+
     .telemetry-grid {
       grid-template-columns: 1fr;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+    }
+
+    .hero-content {
+      padding: 1rem;
+    }
+
+    .main-gauge {
+      transform: scale(0.85);
+    }
+  }
+
+  /* Responsive - Small Mobile */
+  @media (max-width: 400px) {
+    .dashboard {
+      padding: 0.5rem;
+    }
+
+    .main-gauge {
+      transform: scale(0.75);
+    }
+
+    .component-card {
+      padding: 0.75rem;
     }
   }
 </style>

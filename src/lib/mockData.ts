@@ -1,5 +1,5 @@
 // RASS Sentinel Mock Data
-import type { DashboardData, TelemetryDataPoint } from './types';
+import type { DashboardData, TelemetryDataPoint, SplunkLogEntry, ErrorInference, HistoricalSolution, FuturePrediction } from './types';
 
 function generateHistory(baseValue: number, variance: number, count: number = 24): TelemetryDataPoint[] {
   const now = new Date();
@@ -226,3 +226,268 @@ export const mockDashboardData: DashboardData = {
   lastUpdated: new Date().toISOString(),
   dataSource: 'RASS Sentinel'
 };
+
+// Mock Splunk Logs - Service Level Error Analysis
+export const mockSplunkLogs: SplunkLogEntry[] = [
+  {
+    id: 'LOG-001',
+    timestamp: new Date(Date.now() - 300000).toISOString(),
+    service: 'CIS Service',
+    level: 'ERROR',
+    message: 'NullPointerException: CIS info is null at line 22',
+    errorCode: 'NPE-001',
+    stackTrace: 'com.digicert.cis.CISHandler.getCISInfo(CISHandler.java:22)\n  at com.digicert.api.CertificateController.issueCert(CertificateController.java:145)',
+    frequency: 847,
+    repo: 'cis-service',
+    lineNumber: 22
+  },
+  {
+    id: 'LOG-002',
+    timestamp: new Date(Date.now() - 600000).toISOString(),
+    service: 'Auth Service',
+    level: 'ERROR',
+    message: 'TokenExpiredException: JWT token has expired',
+    errorCode: 'AUTH-002',
+    stackTrace: 'com.digicert.auth.JWTValidator.validate(JWTValidator.java:89)\n  at com.digicert.auth.AuthFilter.doFilter(AuthFilter.java:34)',
+    frequency: 523,
+    repo: 'auth-service',
+    lineNumber: 89
+  },
+  {
+    id: 'LOG-003',
+    timestamp: new Date(Date.now() - 900000).toISOString(),
+    service: 'Certificate Service',
+    level: 'FATAL',
+    message: 'ConnectionPoolExhaustedException: Unable to acquire connection from pool',
+    errorCode: 'DB-003',
+    stackTrace: 'com.digicert.db.ConnectionPool.acquire(ConnectionPool.java:156)\n  at com.digicert.cert.CertificateRepository.findById(CertificateRepository.java:45)',
+    frequency: 234,
+    repo: 'certificate-service',
+    lineNumber: 156
+  },
+  {
+    id: 'LOG-004',
+    timestamp: new Date(Date.now() - 1200000).toISOString(),
+    service: 'Validation Service',
+    level: 'ERROR',
+    message: 'DomainValidationException: DNS record not found for domain',
+    errorCode: 'VAL-004',
+    stackTrace: 'com.digicert.validation.DNSValidator.validate(DNSValidator.java:78)\n  at com.digicert.validation.DomainValidator.validateDomain(DomainValidator.java:112)',
+    frequency: 189,
+    repo: 'validation-service',
+    lineNumber: 78
+  },
+  {
+    id: 'LOG-005',
+    timestamp: new Date(Date.now() - 1800000).toISOString(),
+    service: 'CIS Service',
+    level: 'WARN',
+    message: 'CISCacheExpired: CIS cache entry expired, fetching from upstream',
+    errorCode: 'CACHE-001',
+    stackTrace: 'com.digicert.cis.CISCache.get(CISCache.java:45)\n  at com.digicert.cis.CISHandler.getCISInfo(CISHandler.java:18)',
+    frequency: 1256,
+    repo: 'cis-service',
+    lineNumber: 45
+  },
+  {
+    id: 'LOG-006',
+    timestamp: new Date(Date.now() - 2400000).toISOString(),
+    service: 'API Gateway',
+    level: 'ERROR',
+    message: 'RateLimitExceededException: Client exceeded rate limit of 1000 req/min',
+    errorCode: 'RATE-001',
+    stackTrace: 'com.digicert.gateway.RateLimiter.check(RateLimiter.java:67)\n  at com.digicert.gateway.GatewayFilter.doFilter(GatewayFilter.java:29)',
+    frequency: 456,
+    repo: 'api-gateway',
+    lineNumber: 67
+  }
+];
+
+// Error Inference - Code Location Analysis
+export const mockErrorInferences: ErrorInference[] = [
+  {
+    id: 'INF-001',
+    logId: 'LOG-001',
+    service: 'CIS Service',
+    repo: 'cis-service',
+    inferredLocation: 'CISHandler.java - getCISInfo() method',
+    lineNumbers: [21, 22, 23],
+    confidence: 'high',
+    rootCause: 'CIS info is not populated before method call. Missing null check at line 21-22.',
+    affectedComponent: 'Certificate Issuance Pipeline',
+    relatedLogs: ['LOG-005']
+  },
+  {
+    id: 'INF-002',
+    logId: 'LOG-002',
+    service: 'Auth Service',
+    repo: 'auth-service',
+    inferredLocation: 'JWTValidator.java - validate() method',
+    lineNumbers: [87, 88, 89],
+    confidence: 'high',
+    rootCause: 'Token expiry check fails when clock skew exceeds 30 seconds. No grace period configured.',
+    affectedComponent: 'Authentication Flow',
+    relatedLogs: []
+  },
+  {
+    id: 'INF-003',
+    logId: 'LOG-003',
+    service: 'Certificate Service',
+    repo: 'certificate-service',
+    inferredLocation: 'ConnectionPool.java - acquire() method',
+    lineNumbers: [154, 155, 156],
+    confidence: 'medium',
+    rootCause: 'Connection pool size (20) insufficient for current load. Connections not being released properly in some code paths.',
+    affectedComponent: 'Database Layer',
+    relatedLogs: ['LOG-004']
+  },
+  {
+    id: 'INF-004',
+    logId: 'LOG-004',
+    service: 'Validation Service',
+    repo: 'validation-service',
+    inferredLocation: 'DNSValidator.java - validate() method',
+    lineNumbers: [76, 77, 78],
+    confidence: 'medium',
+    rootCause: 'DNS lookup timeout set too low (5s). Some DNS providers respond slowly.',
+    affectedComponent: 'Domain Validation Pipeline',
+    relatedLogs: []
+  }
+];
+
+// Historical Solutions - Previously Taken Steps
+export const mockHistoricalSolutions: HistoricalSolution[] = [
+  {
+    id: 'SOL-001',
+    errorPattern: 'NullPointerException: CIS info is null',
+    service: 'CIS Service',
+    solution: 'Handle null CIS info case with fail-fast approach',
+    stepsToResolve: [
+      'Add null check at CISHandler.java:21 before accessing CIS info',
+      'Implement fail-fast pattern: throw CISNotPopulatedException if CIS info is null',
+      'Add circuit breaker to prevent cascading failures',
+      'Log warning when CIS info is not available for debugging'
+    ],
+    resolvedBy: 'John Smith',
+    resolvedAt: '2026-02-15T10:30:00Z',
+    timeToResolve: '2h 15m',
+    effectiveness: 94,
+    tags: ['null-pointer', 'cis', 'fail-fast', 'circuit-breaker']
+  },
+  {
+    id: 'SOL-002',
+    errorPattern: 'TokenExpiredException: JWT token has expired',
+    service: 'Auth Service',
+    solution: 'Implement token refresh mechanism with grace period',
+    stepsToResolve: [
+      'Add 60-second grace period for token expiry validation',
+      'Implement automatic token refresh in AuthFilter before expiry',
+      'Add clock skew tolerance configuration (default: 30s)',
+      'Return 419 status with refresh token hint instead of 401'
+    ],
+    resolvedBy: 'Sarah Johnson',
+    resolvedAt: '2026-02-10T14:45:00Z',
+    timeToResolve: '1h 30m',
+    effectiveness: 98,
+    tags: ['jwt', 'auth', 'token-refresh', 'grace-period']
+  },
+  {
+    id: 'SOL-003',
+    errorPattern: 'ConnectionPoolExhaustedException',
+    service: 'Certificate Service',
+    solution: 'Increase connection pool and add connection leak detection',
+    stepsToResolve: [
+      'Increase maxPoolSize from 20 to 50 in database config',
+      'Enable connection leak detection with 30s threshold',
+      'Add connection timeout of 5s to prevent indefinite waits',
+      'Implement connection pooling with HikariCP for better performance',
+      'Add metrics for active/idle connections monitoring'
+    ],
+    resolvedBy: 'Mike Chen',
+    resolvedAt: '2026-02-20T09:15:00Z',
+    timeToResolve: '3h 45m',
+    effectiveness: 87,
+    tags: ['database', 'connection-pool', 'hikari', 'performance']
+  },
+  {
+    id: 'SOL-004',
+    errorPattern: 'DomainValidationException: DNS record not found',
+    service: 'Validation Service',
+    solution: 'Increase DNS timeout and add retry mechanism',
+    stepsToResolve: [
+      'Increase DNS lookup timeout from 5s to 15s',
+      'Implement exponential backoff retry (3 attempts)',
+      'Add fallback to secondary DNS resolver',
+      'Cache successful DNS lookups for 5 minutes'
+    ],
+    resolvedBy: 'Emily Davis',
+    resolvedAt: '2026-02-18T16:20:00Z',
+    timeToResolve: '1h 45m',
+    effectiveness: 91,
+    tags: ['dns', 'validation', 'retry', 'timeout']
+  }
+];
+
+// Calculate Future RASS Prediction based on 2x RPS
+export function calculateFuturePrediction(currentData: DashboardData): FuturePrediction {
+  const currentRPS = currentData.telemetry.requestsPerSec?.current || 12000;
+  const predictedRPS = currentRPS * 2;
+  
+  // Simulate degradation at higher load
+  const loadFactor = 1.8; // Impact multiplier for doubling load
+  
+  const currentScore = currentData.rassScore.overall;
+  const reliability = currentData.rassScore.reliability;
+  const availability = currentData.rassScore.availability;
+  const scalability = currentData.rassScore.scalability;
+  const security = currentData.rassScore.security;
+  
+  // Scalability takes biggest hit, then reliability, availability less affected
+  const predictedScalability = Math.max(20, scalability - (scalability * 0.35));
+  const predictedReliability = Math.max(30, reliability - (reliability * 0.15));
+  const predictedAvailability = Math.max(40, availability - (availability * 0.08));
+  const predictedSecurity = security; // Security doesn't change with load
+  
+  const predictedScore = Math.round(
+    (predictedReliability + predictedAvailability + predictedScalability + predictedSecurity) / 4
+  );
+  
+  const risks: string[] = [];
+  const recommendations: string[] = [];
+  
+  if (predictedScalability < 50) {
+    risks.push('Scalability will drop below acceptable threshold');
+    recommendations.push('Scale horizontally: Add 4-6 more app nodes before load increase');
+  }
+  if (predictedReliability < 60) {
+    risks.push('Error rate likely to exceed 8% at 2x load');
+    recommendations.push('Implement circuit breakers on all external dependencies');
+  }
+  if (currentData.telemetry.cpuUsage?.current > 70) {
+    risks.push('CPU exhaustion risk at 2x RPS - currently at ' + currentData.telemetry.cpuUsage.current + '%');
+    recommendations.push('Upgrade to compute-optimized instances (c5.2xlarge or higher)');
+  }
+  if (currentData.telemetry.memoryUsage?.current > 60) {
+    risks.push('Memory pressure will increase significantly');
+    recommendations.push('Fix memory leak before scaling to prevent OOM cascades');
+  }
+  
+  recommendations.push('Enable auto-scaling with 65% CPU threshold');
+  recommendations.push('Add read replicas for database to handle query load');
+  recommendations.push('Implement request queuing with backpressure for graceful degradation');
+  
+  return {
+    currentRPS,
+    predictedRPS,
+    currentScore,
+    predictedScore,
+    breakdown: {
+      reliability: { current: reliability, predicted: predictedReliability },
+      availability: { current: availability, predicted: predictedAvailability },
+      scalability: { current: scalability, predicted: predictedScalability },
+      security: { current: security, predicted: predictedSecurity }
+    },
+    risks,
+    recommendations
+  };
+}
