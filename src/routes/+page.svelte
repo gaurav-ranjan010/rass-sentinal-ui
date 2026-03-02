@@ -12,6 +12,7 @@
   import ServiceLogAnalysis from '$lib/components/ServiceLogAnalysis.svelte';
   import ErrorInference from '$lib/components/ErrorInference.svelte';
   import HistoricalSolutions from '$lib/components/HistoricalSolutions.svelte';
+  import TelemetryModal from '$lib/components/TelemetryModal.svelte';
   import { dashboardData, rassScore, anomalies, recommendations, telemetry, refreshData, refreshing, splunkLogs, errorInferences, historicalSolutions, futurePrediction } from '$lib/stores';
   import { getCategoryColor } from '$lib/types';
   import type { TelemetryMetric } from '$lib/types';
@@ -25,10 +26,16 @@
   let selectedScore = 0;
   let selectedMetrics: { key: string; metric: TelemetryMetric }[] = [];
 
-  // Modal state for telemetry charts
+  // Modal state for telemetry charts (legacy - kept for detail modal)
   let showTelemetryModal = false;
   let selectedTelemetryMetric: TelemetryMetric | null = null;
   let selectedTelemetryColor = '#42a5f5';
+
+  // Modal state for full telemetry view
+  let showTelemetryDataModal = false;
+
+  // Tab state for Insights & Alerts
+  let activeInsightTab: 'anomalies' | 'recommendations' = 'anomalies';
 
   // Category to telemetry mapping
   const categoryMetrics: Record<string, string[]> = {
@@ -89,6 +96,14 @@
   function closeTelemetryModal() {
     showTelemetryModal = false;
   }
+
+  function openTelemetryDataModal() {
+    showTelemetryDataModal = true;
+  }
+
+  function closeTelemetryDataModal() {
+    showTelemetryDataModal = false;
+  }
 </script>
 
 <svelte:head>
@@ -106,6 +121,10 @@
     </div>
     <div class="refresh-section">
       <span class="last-updated">Last updated: {lastUpdated}</span>
+      <button class="telemetry-btn" on:click={openTelemetryDataModal}>
+        <span class="material-icons">show_chart</span>
+        Show Telemetry Data
+      </button>
       <button class="refresh-btn" on:click={handleManualRefresh} disabled={$refreshing}>
         <span class="material-icons" class:spinning={$refreshing}>refresh</span>
         {$refreshing ? 'Refreshing...' : 'Refresh'}
@@ -206,102 +225,6 @@
     </div>
   </section>
 
-  <!-- Telemetry Charts -->
-  <section class="telemetry-section">
-    <h2 class="section-title">
-      <span class="material-icons">show_chart</span>
-      Live Telemetry Data
-    </h2>
-    <div class="telemetry-grid">
-      {#if $telemetry.errorRate}
-        <TelemetryChart
-          data={$telemetry.errorRate.history}
-          label={$telemetry.errorRate.name}
-          unit={$telemetry.errorRate.unit}
-          current={$telemetry.errorRate.current}
-          threshold={$telemetry.errorRate.threshold}
-          status={$telemetry.errorRate.status}
-          color="#f44336"
-          clickable={true}
-          on:click={handleTelemetryClick}
-        />
-      {/if}
-      {#if $telemetry.latencyP99}
-        <TelemetryChart
-          data={$telemetry.latencyP99.history}
-          label={$telemetry.latencyP99.name}
-          unit={$telemetry.latencyP99.unit}
-          current={$telemetry.latencyP99.current}
-          threshold={$telemetry.latencyP99.threshold}
-          status={$telemetry.latencyP99.status}
-          color="#2196f3"
-          clickable={true}
-          on:click={handleTelemetryClick}
-        />
-      {/if}
-      {#if $telemetry.cpuUsage}
-        <TelemetryChart
-          data={$telemetry.cpuUsage.history}
-          label={$telemetry.cpuUsage.name}
-          unit={$telemetry.cpuUsage.unit}
-          current={$telemetry.cpuUsage.current}
-          threshold={$telemetry.cpuUsage.threshold}
-          status={$telemetry.cpuUsage.status}
-          color="#ab47bc"
-          clickable={true}
-          on:click={handleTelemetryClick}
-        />
-      {/if}
-      {#if $telemetry.memoryUsage}
-        <TelemetryChart
-          data={$telemetry.memoryUsage.history}
-          label={$telemetry.memoryUsage.name}
-          unit={$telemetry.memoryUsage.unit}
-          current={$telemetry.memoryUsage.current}
-          threshold={$telemetry.memoryUsage.threshold}
-          status={$telemetry.memoryUsage.status}
-          color="#9c27b0"
-          clickable={true}
-          on:click={handleTelemetryClick}
-        />
-      {/if}
-      {#if $telemetry.uptime}
-        <TelemetryChart
-          data={$telemetry.uptime.history}
-          label={$telemetry.uptime.name}
-          unit={$telemetry.uptime.unit}
-          current={$telemetry.uptime.current}
-          threshold={$telemetry.uptime.threshold}
-          status={$telemetry.uptime.status}
-          color="#4caf50"
-          clickable={true}
-          on:click={handleTelemetryClick}
-        />
-      {/if}
-      {#if $telemetry.requestsPerSec}
-        <TelemetryChart
-          data={$telemetry.requestsPerSec.history}
-          label={$telemetry.requestsPerSec.name}
-          unit={$telemetry.requestsPerSec.unit}
-          current={$telemetry.requestsPerSec.current}
-          threshold={$telemetry.requestsPerSec.threshold}
-          status={$telemetry.requestsPerSec.status}
-          color="#00bcd4"
-          clickable={true}
-          on:click={handleTelemetryClick}
-        />
-      {/if}
-    </div>
-  </section>
-
-  <!-- Anomalies & Recommendations -->
-  <section class="insights-section">
-    <div class="insights-grid">
-      <AnomalyPanel anomalies={$anomalies} />
-      <RecommendationsPanel recommendations={$recommendations} />
-    </div>
-  </section>
-
   <!-- Future Prediction & Log Analysis -->
   <section class="prediction-section">
     <h2 class="section-title">
@@ -325,6 +248,44 @@
       <HistoricalSolutions solutions={$historicalSolutions} />
     </div>
   </section>
+
+  <!-- Intelligent Insights & Alerts (Tabbed) -->
+  <section class="insights-section">
+    <div class="insights-header">
+      <div class="header-left">
+        <span class="material-icons">insights</span>
+        <h2>Intelligent Insights & Alerts</h2>
+      </div>
+      <div class="tab-controls">
+        <button 
+          class="tab-btn" 
+          class:active={activeInsightTab === 'anomalies'}
+          on:click={() => activeInsightTab = 'anomalies'}
+        >
+          <span class="material-icons">warning</span>
+          Anomaly Detection
+          <span class="badge">{$anomalies.length}</span>
+        </button>
+        <button 
+          class="tab-btn" 
+          class:active={activeInsightTab === 'recommendations'}
+          on:click={() => activeInsightTab = 'recommendations'}
+        >
+          <span class="material-icons">lightbulb</span>
+          Smart Recommendations
+          <span class="badge">{$recommendations.length}</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="insights-content">
+      {#if activeInsightTab === 'anomalies'}
+        <AnomalyPanel anomalies={$anomalies} />
+      {:else}
+        <RecommendationsPanel recommendations={$recommendations} />
+      {/if}
+    </div>
+  </section>
 </main>
 
 <!-- Metric Detail Modal -->
@@ -334,6 +295,13 @@
   score={selectedScore}
   metrics={selectedMetrics}
   on:close={closeModal}
+/>
+
+<!-- Telemetry Data Modal -->
+<TelemetryModal
+  show={showTelemetryDataModal}
+  telemetryData={$telemetry}
+  on:close={closeTelemetryDataModal}
 />
 
 <!-- Telemetry Detail Modal -->
@@ -401,6 +369,33 @@
   .last-updated {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.5);
+  }
+
+  .telemetry-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: linear-gradient(135deg, rgba(0, 188, 212, 0.15) 0%, rgba(0, 151, 167, 0.15) 100%);
+    border: 1px solid rgba(0, 188, 212, 0.3);
+    color: #00bcd4;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .telemetry-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 188, 212, 0.25) 0%, rgba(0, 151, 167, 0.25) 100%);
+    border-color: rgba(0, 188, 212, 0.5);
+    color: #26c6da;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 188, 212, 0.2);
+  }
+
+  .telemetry-btn .material-icons {
+    font-size: 16px;
   }
 
   .refresh-btn {
@@ -527,20 +522,99 @@
     gap: 1.25rem;
   }
 
-  /* Telemetry Section */
-  .telemetry-section {
-    margin-bottom: 2rem;
-  }
-
-  .telemetry-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-    gap: 1.25rem;
-  }
-
   /* Insights Section */
   .insights-section {
     margin-bottom: 2rem;
+  }
+
+  .insights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .insights-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .insights-header .header-left .material-icons {
+    color: #ffa726;
+    font-size: 28px;
+  }
+
+  .insights-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+  }
+
+  .tab-controls {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.4rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .tab-btn .material-icons {
+    font-size: 18px;
+  }
+
+  .tab-btn .badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15) 0%, rgba(251, 140, 0, 0.15) 100%);
+    color: #ffb74d;
+    border: 1px solid rgba(255, 167, 38, 0.3);
+  }
+
+  .tab-btn.active .badge {
+    background: rgba(255, 167, 38, 0.2);
+    color: #ffb74d;
+  }
+
+  .insights-content {
+    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(20, 20, 35, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
   }
 
   .insights-grid {
@@ -598,6 +672,22 @@
     .metrics-grid {
       grid-template-columns: repeat(2, 1fr);
     }
+
+    .insights-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .tab-controls {
+      width: 100%;
+    }
+
+    .tab-btn {
+      flex: 1;
+      justify-content: center;
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem;
+    }
   }
 
   /* Responsive - Mobile */
@@ -631,10 +721,6 @@
       grid-template-columns: 1fr;
     }
 
-    .telemetry-grid {
-      grid-template-columns: 1fr;
-    }
-
     .section-title {
       font-size: 0.9rem;
     }
@@ -645,6 +731,25 @@
 
     .main-gauge {
       transform: scale(0.85);
+    }
+
+    .insights-content {
+      padding: 1rem;
+    }
+
+    .tab-btn {
+      font-size: 0.75rem;
+      padding: 0.5rem;
+      gap: 0.3rem;
+    }
+
+    .tab-btn .material-icons {
+      font-size: 16px;
+    }
+
+    .tab-btn .badge {
+      font-size: 0.65rem;
+      padding: 0.1rem 0.4rem;
     }
   }
 
