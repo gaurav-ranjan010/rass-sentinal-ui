@@ -8,6 +8,26 @@
 
 RASS Sentinel is an advanced AI-powered monitoring dashboard that transforms raw observability data into proactive, intelligent platform protection. It combines real-time metrics, predictive analytics, log analysis, and historical knowledge to provide comprehensive system health insights.
 
+**📊 [View Complete Flow Diagrams & Integration Guide →](FLOWS_AND_DIAGRAMS.md)**
+
+---
+
+## 📑 Table of Contents
+
+- [What is RASS?](#-what-is-rass)
+- [Core Features](#-core-features)
+- [AI-Powered Intelligence Features](#-ai-powered-intelligence-features)
+- [UI/UX Features](#-uiux-features)
+- [Technical Architecture](#️-technical-architecture)
+- [Detailed Flow Diagrams](#-detailed-flow-diagrams) ⭐
+- [API Integration Code Examples](#️-api-integration-code-examples)
+- [Quick Start](#-quick-start)
+- [Tech Stack](#️-tech-stack)
+- [Data Model](#-data-model)
+- [Use Cases](#-use-cases)
+- [Why RASS Sentinel?](#-why-rass-sentinel)
+- [Roadmap](#-roadmap)
+
 ---
 
 ## 🎯 What is RASS?
@@ -175,34 +195,57 @@ Four clickable cards for deep-dive analysis:
 
 ## 🏗️ Technical Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        RASS Sentinel UI                              │
-│                    (SvelteKit 2.0 + TypeScript)                      │
-├─────────────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │  Health  │  │  Future  │  │   Log    │  │  Error   │           │
-│  │  Score   │  │Prediction│  │ Analysis │  │Inference │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │Telemetry │  │ Anomaly  │  │  Recom-  │  │Historical│           │
-│  │  Modal   │  │Detection │  │mendations│  │Solutions │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-├─────────────────────────────────────────────────────────────────────┤
-│                      State Management Layer                          │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ Svelte Stores (dashboardData, telemetry, anomalies, etc.)   │  │
-│  │ - Real-time updates via refreshData()                        │  │
-│  │ - Derived stores for computed values                         │  │
-│  │ - Reactive state propagation                                 │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-├─────────────────────────────────────────────────────────────────────┤
-│                         Data Sources                                 │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ Datadog  │  │Prometheus│  │  Splunk  │  │Historical│           │
-│  │  (Mock)  │  │  (Mock)  │  │  (Mock)  │  │   DB     │           │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
-└─────────────────────────────────────────────────────────────────────┘
+### Overall System Architecture
+
+![Overall System Architecture](static/hld.svg)
+![High Level Data flow](static/high_level_data_flow.svg) 
+
+### High-Level Data Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as RASS Sentinel UI
+    participant Store as Svelte Stores
+    participant API as Integration Layer
+    participant NR as New Relic
+    participant Splunk
+    participant GitHub
+    participant AI as AI/ML Engine
+    participant SOP as SOP Database
+
+    User->>UI: Opens Dashboard
+    UI->>Store: Initialize State
+    
+    par Parallel Data Fetching
+        Store->>API: Fetch Telemetry
+        API->>NR: Query APM Metrics
+        NR-->>API: Return Metrics Data
+        API-->>Store: Update Telemetry Store
+    and
+        Store->>API: Fetch Logs
+        API->>Splunk: Query Error Logs
+        Splunk-->>API: Return Log Entries
+        API-->>Store: Update Logs Store
+    and
+        Store->>API: Fetch Historical Solutions
+        API->>SOP: Query Knowledge Base
+        SOP-->>API: Return SOPs
+        API-->>Store: Update Solutions Store
+    end
+    
+    Store-->>UI: Reactive Update
+    UI-->>User: Display Dashboard
+    
+    User->>UI: Click Error in Logs
+    UI->>API: Request Error Analysis
+    API->>GitHub: Fetch Source Code
+    GitHub-->>API: Return Code Context
+    API->>AI: Analyze Error + Code
+    AI-->>API: Return Inference
+    API-->>Store: Update Inference Store
+    Store-->>UI: Show Code Location
+    UI-->>User: Display Root Cause
 ```
 
 ### Component Structure
@@ -237,7 +280,891 @@ src/
 
 ---
 
-## 🚀 Quick Start
+## 📊 Detailed Flow Diagrams
+
+> **📘 For the complete flow diagrams, integration examples, and end-to-end scenarios, see [FLOWS_AND_DIAGRAMS.md](FLOWS_AND_DIAGRAMS.md)**
+
+This section provides detailed flowcharts for each major system feature, showing the integration points with New Relic, Splunk, GitHub, OpenAI, and the SOP database.
+
+### Flow 1: Telemetry Data Fetching (New Relic Integration)
+
+![Telemetry Data Fetching Flow](static/flow1-telemetry.svg)
+
+**New Relic NRQL Query Examples:**
+```sql
+-- Error Rate
+SELECT percentage(count(*), WHERE error IS TRUE) 
+FROM Transaction 
+WHERE appName = 'YourService' 
+SINCE 30 minutes ago
+
+-- P99 Latency
+SELECT percentile(duration, 99) 
+FROM Transaction 
+WHERE appName = 'YourService' 
+SINCE 30 minutes ago
+
+-- CPU & Memory
+SELECT average(cpuPercent), average(memoryUsedPercent) 
+FROM SystemSample 
+WHERE hostname LIKE 'prod-%' 
+SINCE 30 minutes ago
+```
+
+---
+
+### Flow 2: Log Analysis (Splunk Integration)
+
+```mermaid
+flowchart TD
+    START([Error Detected in Metrics]) --> TRIGGER[Trigger Log Fetch]
+    
+    TRIGGER --> SPLUNK_API[Connect to Splunk API]
+    SPLUNK_API --> AUTH{Authentication<br/>Valid?}
+    
+    AUTH -->|Yes| BUILD_QUERY[Build Splunk Query:<br/>- Time Range: Last 1h<br/>- Service Filter<br/>- Level: ERROR, FATAL]
+    AUTH -->|No| AUTH_ERROR[Use Cached Logs]
+    
+    BUILD_QUERY --> EXECUTE[Execute Search Query]
+    
+    EXECUTE --> PARSE[Parse Log Entries:<br/>- Timestamp<br/>- Service Name<br/>- Error Message<br/>- Stack Trace<br/>- Error Code]
+    
+    PARSE --> AGGREGATE[Aggregate by Pattern:<br/>- Group Similar Errors<br/>- Count Frequency<br/>- Extract Line Numbers]
+    
+    AGGREGATE --> ENRICH[Enrich with Metadata:<br/>- Affected Repository<br/>- Service Version<br/>- Deployment Time]
+    
+    ENRICH --> UPDATE[Update splunkLogs Store]
+    
+    UPDATE --> UI_RENDER[Render in ServiceLogAnalysis Component]
+    
+    UI_RENDER --> USER_SELECT{User Clicks<br/>Error Log?}
+    
+    USER_SELECT -->|Yes| EXPAND[Expand Stack Trace]
+    USER_SELECT -->|No| MONITOR[Continue Monitoring]
+    
+    EXPAND --> EXTRACT_INFO[Extract:<br/>- File Name<br/>- Line Numbers<br/>- Error Type]
+    
+    EXTRACT_INFO --> TRIGGER_INFERENCE[Trigger Error Inference Flow]
+    
+    MONITOR --> WAIT[Wait for Next Error]
+    WAIT --> START
+    
+    AUTH_ERROR --> UPDATE
+    
+    style START fill:#ef5350,stroke:#c62828,color:#fff
+    style SPLUNK_API fill:#ab47bc,stroke:#7b1fa2,color:#fff
+    style AGGREGATE fill:#42a5f5,stroke:#1976d2,color:#fff
+    style TRIGGER_INFERENCE fill:#66bb6a,stroke:#388e3c,color:#fff
+```
+
+**Splunk Query Example:**
+```spl
+index=application_logs 
+sourcetype=service_logs 
+level IN (ERROR, FATAL) 
+service="CIS-Service" OR service="Auth-Service" OR service="Certificate-Service"
+earliest=-1h 
+| rex field=_raw "(?<errorCode>[A-Z]+-\d+)"
+| rex field=_raw "at (?<javaClass>[\w.]+):(?<lineNumber>\d+)"
+| stats count by errorCode, javaClass, lineNumber, message
+| sort -count
+```
+
+---
+
+### Flow 3: Error Inference & Code Analysis (GitHub Integration)
+
+```mermaid
+flowchart TD
+    START([Log Error Selected]) --> EXTRACT[Extract Error Details:<br/>- Service Name<br/>- Error Type<br/>- Stack Trace]
+    
+    EXTRACT --> MAP[Map Service to GitHub Repo:<br/>CIS-Service → digicert/cis-service<br/>Auth-Service → digicert/auth-service]
+    
+    MAP --> GH_AUTH{GitHub API<br/>Authentication}
+    
+    GH_AUTH -->|Success| FETCH_CODE[Fetch Source Code:<br/>GET /repos/{owner}/{repo}/contents/{path}]
+    GH_AUTH -->|Failure| FALLBACK[Use Inference Without Code]
+    
+    FETCH_CODE --> LOCATE[Locate Error Line:<br/>- Parse Stack Trace<br/>- Find File Path<br/>- Extract Line Number]
+    
+    LOCATE --> CONTEXT[Fetch Code Context:<br/>- 10 Lines Before<br/>- Error Line<br/>- 10 Lines After]
+    
+    CONTEXT --> AI_ANALYZE[Send to AI Engine:<br/>- Error Message<br/>- Code Context<br/>- Historical Patterns]
+    
+    AI_ANALYZE --> GPT[OpenAI/Claude API:<br/>"Analyze this error and code"]
+    
+    GPT --> INFERENCE[Generate Inference:<br/>- Root Cause<br/>- Affected Component<br/>- Confidence Level]
+    
+    INFERENCE --> CONFIDENCE{Confidence<br/>Level?}
+    
+    CONFIDENCE -->|High 90%+| HIGH[Mark as High Confidence]
+    CONFIDENCE -->|Medium 60-89%| MEDIUM[Mark as Medium Confidence]
+    CONFIDENCE -->|Low <60%| LOW[Mark as Low Confidence]
+    
+    HIGH --> STORE_RESULT[Store in errorInferences]
+    MEDIUM --> STORE_RESULT
+    LOW --> STORE_RESULT
+    
+    STORE_RESULT --> RENDER[Render in ErrorInference Component]
+    
+    RENDER --> SUGGEST[Suggest Historical Solutions]
+    
+    FALLBACK --> AI_ANALYZE
+    
+    style START fill:#ef5350,stroke:#c62828,color:#fff
+    style GH_AUTH fill:#42a5f5,stroke:#1976d2,color:#fff
+    style AI_ANALYZE fill:#ab47bc,stroke:#7b1fa2,color:#fff
+    style HIGH fill:#66bb6a,stroke:#388e3c,color:#fff
+    style MEDIUM fill:#ffa726,stroke:#f57c00,color:#000
+    style LOW fill:#ffeb3b,stroke:#f57f17,color:#000
+```
+
+**GitHub API Integration:**
+```typescript
+// Fetch source code
+const response = await fetch(
+  `https://api.github.com/repos/digicert/${service}/contents/${filePath}`,
+  {
+    headers: {
+      'Authorization': `Bearer ${GITHUB_TOKEN}`,
+      'Accept': 'application/vnd.github.v3.raw'
+    }
+  }
+);
+
+// Get specific line context
+const lines = content.split('\n');
+const startLine = Math.max(0, errorLine - 10);
+const endLine = Math.min(lines.length, errorLine + 10);
+const context = lines.slice(startLine, endLine).join('\n');
+```
+
+**AI Prompt Example:**
+```
+Analyze this Java error:
+
+Error: NullPointerException at CISHandler.java:22
+Stack Trace: [full stack trace]
+
+Code Context:
+20: public void handleRequest(Request req) {
+21:   CISInfo info = req.getCISInfo();
+22:   String value = info.getValue(); // NPE HERE
+23:   processValue(value);
+24: }
+
+Provide:
+1. Root cause explanation
+2. Affected component
+3. Confidence level (high/medium/low)
+4. Related code locations
+```
+
+---
+
+### Flow 4: Historical Solutions & AI Recommendations
+
+```mermaid
+flowchart TD
+    START([Error Inference Complete]) --> PATTERN[Extract Error Pattern:<br/>- Error Type<br/>- Service Name<br/>- Root Cause Category]
+    
+    PATTERN --> SEARCH_SOP{Search SOP Database}
+    
+    SEARCH_SOP --> QUERY[Query by:<br/>- Error Pattern<br/>- Service Name<br/>- Tags]
+    
+    QUERY --> FOUND{Matching SOP<br/>Found?}
+    
+    FOUND -->|Yes| RETRIEVE[Retrieve SOP:<br/>- Resolution Steps<br/>- Effectiveness Rating<br/>- Resolver Info<br/>- Time to Resolve]
+    FOUND -->|No| AI_GEN[Generate AI Solution]
+    
+    RETRIEVE --> RANK[Rank by:<br/>1. Effectiveness %<br/>2. Recent Usage<br/>3. Same Service]
+    
+    RANK --> TOP_SOPS[Select Top 3 SOPs]
+    
+    AI_GEN --> GPT_PROMPT[OpenAI API Call:<br/>"Generate solution for:<br/>{error pattern}"]
+    
+    GPT_PROMPT --> GPT_RESPONSE[Parse AI Response:<br/>- Step-by-step Fix<br/>- Code Changes<br/>- Testing Steps]
+    
+    GPT_RESPONSE --> VALIDATE[Validate Solution:<br/>- Check Against Best Practices<br/>- Security Review<br/>- Impact Assessment]
+    
+    VALIDATE --> AI_SOLUTION[Package AI-Generated Solution]
+    
+    TOP_SOPS --> COMBINE[Combine SOP + AI Solutions]
+    AI_SOLUTION --> COMBINE
+    
+    COMBINE --> ENHANCE[Enhance with Context:<br/>- Add Code Snippets<br/>- Link to Docs<br/>- Estimate Time]
+    
+    ENHANCE --> UPDATE[Update historicalSolutions Store]
+    
+    UPDATE --> RENDER[Render in HistoricalSolutions Component]
+    
+    RENDER --> USER_ACTION{User Takes<br/>Action?}
+    
+    USER_ACTION -->|Apply Solution| TRACK[Track Application:<br/>- Who Applied<br/>- When Applied<br/>- Service Affected]
+    USER_ACTION -->|Request More Info| DETAIL[Show Detailed Steps]
+    USER_ACTION -->|Dismiss| CONTINUE
+    
+    TRACK --> FOLLOWUP[Schedule Follow-up:<br/>- Check if Error Resolved<br/>- Measure Time to Resolution<br/>- Update Effectiveness %]
+    
+    FOLLOWUP --> FEEDBACK[Request Feedback:<br/>Did this solution work?]
+    
+    FEEDBACK --> UPDATE_SOP{Solution<br/>Effective?}
+    
+    UPDATE_SOP -->|Yes| INCREMENT[Increment Effectiveness:<br/>Add to Success Count]
+    UPDATE_SOP -->|No| DECREMENT[Mark as Ineffective:<br/>Request Alternative]
+    
+    INCREMENT --> LEARN[Store in Knowledge Base]
+    DECREMENT --> AI_GEN
+    
+    LEARN --> END([End])
+    DETAIL --> END
+    CONTINUE --> END
+    
+    style START fill:#42a5f5,stroke:#1976d2,color:#fff
+    style SEARCH_SOP fill:#ab47bc,stroke:#7b1fa2,color:#fff
+    style AI_GEN fill:#ef5350,stroke:#c62828,color:#fff
+    style TOP_SOPS fill:#66bb6a,stroke:#388e3c,color:#fff
+    style LEARN fill:#26c6da,stroke:#0097a7,color:#000
+```
+
+**SOP Database Schema:**
+```typescript
+interface SOPEntry {
+  id: string;
+  errorPattern: string;
+  service: string;
+  rootCauseCategory: string;
+  resolution: {
+    steps: string[];
+    codeChanges?: string;
+    configChanges?: string;
+    deploymentNotes?: string;
+  };
+  metadata: {
+    resolvedBy: string;
+    resolvedAt: string;
+    timeToResolve: string;
+    effectiveness: number; // 0-100
+    timesApplied: number;
+    successCount: number;
+  };
+  tags: string[];
+}
+```
+
+---
+
+### Flow 5: Future RASS Prediction (Load Simulation)
+
+```mermaid
+flowchart TD
+    START([Current Metrics Loaded]) --> BASELINE[Capture Baseline:<br/>- Current RPS<br/>- Current RASS Score<br/>- Current Resource Usage]
+    
+    BASELINE --> SIMULATE[Simulate 2x Load:<br/>- Double RPS<br/>- Model Resource Impact]
+    
+    SIMULATE --> CALC_R[Calculate Future Reliability:<br/>R_new = R_current × (1 - error_increase)<br/>error_increase = f(load_factor)]
+    
+    CALC_R --> CALC_A[Calculate Future Availability:<br/>A_new = A_current × (1 - timeout_rate)<br/>timeout_rate = f(latency_increase)]
+    
+    CALC_A --> CALC_S[Calculate Future Scalability:<br/>S_new = S_current × (1 - resource_saturation)<br/>resource_saturation = f(CPU, Memory)]
+    
+    CALC_S --> CALC_SEC[Calculate Future Security:<br/>S_new = S_current<br/>(Security typically stable)]
+    
+    CALC_SEC --> AGGREGATE[Aggregate Future RASS:<br/>Overall = weighted_avg(R, A, S, S)]
+    
+    AGGREGATE --> COMPARE{Future Score<br/>< Threshold?}
+    
+    COMPARE -->|Yes, Critical| RISK_HIGH[Generate High-Risk Alerts:<br/>- CPU Exhaustion Imminent<br/>- Error Rate Will Spike]
+    COMPARE -->|Yes, Warning| RISK_MED[Generate Medium-Risk Alerts:<br/>- Latency Will Increase<br/>- Memory Pressure Expected]
+    COMPARE -->|No| RISK_LOW[Generate Info Alerts:<br/>- Sufficient Capacity<br/>- Monitor Closely]
+    
+    RISK_HIGH --> RECOMMEND_H[Recommend Actions:<br/>- Scale Horizontally NOW<br/>- Add 5+ Nodes<br/>- Enable Circuit Breaker]
+    
+    RISK_MED --> RECOMMEND_M[Recommend Actions:<br/>- Plan Scaling in 24h<br/>- Optimize Database Queries<br/>- Enable Caching]
+    
+    RISK_LOW --> RECOMMEND_L[Recommend Actions:<br/>- Continue Monitoring<br/>- Review in 7 days]
+    
+    RECOMMEND_H --> BREAKDOWN[Calculate Component Breakdown:<br/>- Reliability: 68 → 58<br/>- Availability: 92 → 85<br/>- Scalability: 55 → 36<br/>- Security: 78 → 78]
+    RECOMMEND_M --> BREAKDOWN
+    RECOMMEND_L --> BREAKDOWN
+    
+    BREAKDOWN --> UPDATE[Update futurePrediction Store]
+    
+    UPDATE --> RENDER[Render in FuturePrediction Component:<br/>- Current vs Predicted Gauges<br/>- Risk List<br/>- Recommendation Cards]
+    
+    RENDER --> USER_REVIEW{User Reviews<br/>Prediction?}
+    
+    USER_REVIEW -->|Export Report| EXPORT[Generate PDF Report:<br/>- Current State<br/>- Predicted State<br/>- Action Plan]
+    USER_REVIEW -->|Monitor Live| LIVE[Enable Live Tracking Mode]
+    USER_REVIEW -->|Dismiss| END
+    
+    EXPORT --> END([End])
+    LIVE --> ALERT_SETUP[Setup Predictive Alerts:<br/>Notify when actual approaches predicted]
+    ALERT_SETUP --> END
+    
+    style START fill:#42a5f5,stroke:#1976d2,color:#fff
+    style RISK_HIGH fill:#ef5350,stroke:#c62828,color:#fff
+    style RISK_MED fill:#ffa726,stroke:#f57c00,color:#000
+    style RISK_LOW fill:#66bb6a,stroke:#388e3c,color:#fff
+    style RECOMMEND_H fill:#d32f2f,stroke:#b71c1c,color:#fff
+```
+
+**Prediction Algorithm:**
+```typescript
+function calculateFuturePrediction(current: DashboardData, loadMultiplier: number) {
+  const futureRPS = current.rps * loadMultiplier;
+  
+  // Reliability degrades with error rate increase
+  const errorIncreaseFactor = 1 + (loadMultiplier - 1) * 0.4; // 40% increase per 2x load
+  const futureReliability = Math.max(0, current.reliability * (1 - errorIncreaseFactor * 0.15));
+  
+  // Availability affected by timeout rate
+  const timeoutFactor = (loadMultiplier - 1) * 0.08;
+  const futureAvailability = Math.max(0, current.availability * (1 - timeoutFactor));
+  
+  // Scalability hit hardest
+  const cpuSaturation = Math.min(1, (current.cpu / 100) * loadMultiplier);
+  const memorySaturation = Math.min(1, (current.memory / 100) * loadMultiplier);
+  const resourceImpact = (cpuSaturation + memorySaturation) / 2;
+  const futureScalability = Math.max(0, current.scalability * (1 - resourceImpact * 0.65));
+  
+  // Security remains stable
+  const futureSecurity = current.security;
+  
+  const futureScore = (futureReliability + futureAvailability + futureScalability + futureSecurity) / 4;
+  
+  return {
+    currentRPS,
+    predictedRPS: futureRPS,
+    currentScore: current.overall,
+    predictedScore: futureScore,
+    breakdown: { ... }
+  };
+}
+```
+
+---
+
+## � Integration Architecture
+
+### External System Integrations
+
+```mermaid
+graph LR
+    subgraph "RASS Sentinel Core"
+        API[API Integration Layer]
+        CACHE[Redis Cache]
+        QUEUE[Message Queue]
+    end
+    
+    subgraph "Telemetry - New Relic"
+        NR_APM[APM Metrics]
+        NR_INFRA[Infrastructure]
+        NR_LOGS[Log Management]
+    end
+    
+    subgraph "Logs - Splunk"
+        SPL_INDEX[Index: app_logs]
+        SPL_SEARCH[Search API]
+        SPL_ALERT[Alert Webhook]
+    end
+    
+    subgraph "Code - GitHub"
+        GH_REPOS[Repositories]
+        GH_API[REST API v3]
+        GH_SEARCH[Code Search]
+    end
+    
+    subgraph "Knowledge - SOP DB"
+        SOP_SQL[PostgreSQL]
+        SOP_VECTOR[Vector Search]
+        SOP_VERSIONING[Version Control]
+    end
+    
+    subgraph "AI/ML Stack"
+        OPENAI[OpenAI GPT-4]
+        CLAUDE[Anthropic Claude]
+        EMBEDDING[Embedding Model]
+    end
+    
+    API -->|GraphQL| NR_APM
+    API -->|REST| NR_INFRA
+    API -->|NRQL| NR_LOGS
+    
+    API -->|REST| SPL_SEARCH
+    SPL_ALERT -->|Webhook| QUEUE
+    
+    API -->|REST| GH_API
+    API -->|Search| GH_SEARCH
+    
+    API -->|SQL| SOP_SQL
+    API -->|Semantic Search| SOP_VECTOR
+    
+    API -->|Inference| OPENAI
+    API -->|Code Analysis| CLAUDE
+    API -->|Similarity| EMBEDDING
+    
+    CACHE -.->|Cache Results| API
+    QUEUE -.->|Async Jobs| API
+    
+    style API fill:#42a5f5,stroke:#1976d2,color:#fff
+    style NR_APM fill:#66bb6a,stroke:#388e3c,color:#fff
+    style SPL_SEARCH fill:#ab47bc,stroke:#7b1fa2,color:#fff
+    style GH_API fill:#ef5350,stroke:#c62828,color:#fff
+    style OPENAI fill:#ffa726,stroke:#f57c00,color:#000
+```
+
+### Complete End-to-End Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User
+    participant UI as RASS UI
+    participant API as Integration API
+    participant Cache as Redis Cache
+    participant NR as New Relic
+    participant Splunk
+    participant GitHub
+    participant AI as OpenAI/Claude
+    participant SOP as SOP Database
+    participant Queue as Message Queue
+
+    Note over User,Queue: Initial Dashboard Load
+    User->>UI: Open Dashboard
+    UI->>API: Request Dashboard Data
+    API->>Cache: Check Cache
+    
+    alt Cache Hit
+        Cache-->>API: Return Cached Data
+    else Cache Miss
+        API->>NR: Fetch Telemetry (NRQL)
+        NR-->>API: Return Metrics
+        API->>Cache: Store for 30s
+    end
+    
+    API-->>UI: Dashboard Data
+    UI-->>User: Display RASS Score
+    
+    Note over User,Queue: Anomaly Detection Triggered
+    UI->>API: Anomaly Detected (Error Spike)
+    API->>Splunk: Query Error Logs
+    Splunk-->>API: Return 50 Log Entries
+    API->>Queue: Enqueue Analysis Jobs
+    
+    Note over User,Queue: Parallel Error Analysis
+    par Log Processing
+        Queue->>API: Process Log #1
+        API->>GitHub: Fetch Source Code
+        GitHub-->>API: Return CISHandler.java
+        API->>AI: Analyze Error + Code
+        AI-->>API: Inference Result
+        API->>SOP: Search Similar Errors
+        SOP-->>API: 3 Historical Solutions
+        API->>Cache: Store Inference
+    and Log Processing
+        Queue->>API: Process Log #2
+        API->>GitHub: Fetch Source Code
+        GitHub-->>API: Return AuthService.java
+        API->>AI: Analyze Error + Code
+        AI-->>API: Inference Result
+        API->>SOP: Search Similar Errors
+        SOP-->>API: 2 Historical Solutions
+        API->>Cache: Store Inference
+    end
+    
+    Note over User,Queue: Results Displayed
+    API-->>UI: Push Updates (WebSocket)
+    UI-->>User: Show Error Inferences
+    UI-->>User: Show Historical Solutions
+    
+    Note over User,Queue: User Takes Action
+    User->>UI: Apply Solution #1
+    UI->>API: Track Solution Application
+    API->>SOP: Increment Application Count
+    API->>Queue: Schedule Follow-up Check
+    
+    Note over User,Queue: Follow-up Verification (5 minutes later)
+    Queue->>API: Check Error Resolved?
+    API->>NR: Query Error Rate
+    NR-->>API: Error Rate Decreased
+    API->>Splunk: Confirm Log Pattern Gone
+    Splunk-->>API: No Recent Occurrences
+    API->>SOP: Update Effectiveness: 94% → 95%
+    API-->>UI: Notify Success
+    UI-->>User: Solution Confirmed Effective
+```
+
+### Component Structure
+
+```
+src/
+├── lib/
+│   ├── components/
+│   │   ├── HealthScoreGauge.svelte         # Main RASS score display
+│   │   ├── MetricCard.svelte               # RASS component cards
+│   │   ├── MiniGauge.svelte                # Small circular gauges
+│   │   ├── TelemetryChart.svelte           # Line chart visualization
+│   │   ├── TelemetryModal.svelte           # Full telemetry popup
+│   │   ├── MetricDetailModal.svelte        # Detailed metric analysis
+│   │   ├── TelemetryDetailModal.svelte     # Time-series statistics
+│   │   ├── FuturePrediction.svelte         # Predictive analytics
+│   │   ├── ServiceLogAnalysis.svelte       # Log aggregation view
+│   │   ├── ErrorInference.svelte           # Code analysis display
+│   │   ├── HistoricalSolutions.svelte      # Knowledge base UI
+│   │   ├── AnomalyPanel.svelte             # Anomaly detection list
+│   │   └── RecommendationsPanel.svelte     # Smart recommendations
+│   ├── integrations/
+│   │   ├── newrelic.ts                      # New Relic API client
+│   │   ├── splunk.ts                        # Splunk REST API client
+│   │   ├── github.ts                        # GitHub API client
+│   │   ├── ai.ts                            # OpenAI/Claude integration
+│   │   └── sop.ts                           # SOP database queries
+│   ├── types.ts                             # TypeScript interfaces
+│   ├── stores.ts                            # Svelte store definitions
+│   └── mockData.ts                          # Sample data generation
+├── routes/
+│   ├── api/
+│   │   ├── telemetry/+server.ts            # Telemetry API endpoint
+│   │   ├── logs/+server.ts                 # Logs API endpoint
+│   │   ├── inference/+server.ts            # Inference API endpoint
+│   │   └── solutions/+server.ts            # Solutions API endpoint
+│   ├── +page.svelte                         # Main dashboard page
+│   ├── +layout.svelte                       # Global layout
+│   ├── Header.svelte                        # Top navigation bar
+│   └── Footer.svelte                        # Footer with branding
+└── app.html                                  # HTML template
+```
+
+---
+
+## 🛠️ API Integration Code Examples
+
+### New Relic Integration
+
+```typescript
+// src/lib/integrations/newrelic.ts
+export const newRelicConfig = {
+  accountId: process.env.NEW_RELIC_ACCOUNT_ID,
+  apiKey: process.env.NEW_RELIC_API_KEY,
+  region: 'US',
+  appName: 'DigiCert-Platform'
+};
+
+export async function fetchTelemetryData(timeRange: string = '30 minutes ago') {
+  const nrql = `
+    SELECT 
+      percentage(count(*), WHERE error IS TRUE) as errorRate,
+      percentile(duration, 99) as p99Latency,
+      percentile(duration, 50) as p50Latency,
+      average(cpuPercent) as avgCpu,
+      average(memoryUsedPercent) as avgMemory,
+      rate(count(*), 1 minute) as rps,
+      percentage(count(*), WHERE httpResponseCode = 200) as uptime
+    FROM Transaction, SystemSample
+    WHERE appName = '${newRelicConfig.appName}'
+    SINCE ${timeRange}
+    TIMESERIES
+  `;
+  
+  const response = await fetch('https://api.newrelic.com/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'API-Key': newRelicConfig.apiKey
+    },
+    body: JSON.stringify({
+      query: `
+        query($accountId: Int!, $nrql: Nrql!) {
+          actor {
+            account(id: $accountId) {
+              nrql(query: $nrql) {
+                results
+              }
+            }
+          }
+        }
+      `,
+      variables: { 
+        accountId: parseInt(newRelicConfig.accountId), 
+        nrql 
+      }
+    })
+  });
+  
+  const data = await response.json();
+  return data.data.actor.account.nrql.results;
+}
+```
+
+### Splunk Integration
+
+```typescript
+// src/lib/integrations/splunk.ts
+export const splunkConfig = {
+  host: process.env.SPLUNK_HOST || 'splunk.example.com',
+  port: 8089,
+  username: process.env.SPLUNK_USERNAME,
+  password: process.env.SPLUNK_PASSWORD,
+  index: 'application_logs'
+};
+
+export async function fetchErrorLogs(
+  service: string, 
+  timeRange: string = '-1h'
+): Promise<SplunkLogEntry[]> {
+  const searchQuery = `
+    search index=${splunkConfig.index} 
+    sourcetype=service_logs 
+    level IN (ERROR, FATAL) 
+    service="${service}"
+    earliest=${timeRange}
+    | rex field=_raw "(?<errorCode>[A-Z]+-\\d+)"
+    | rex field=_raw "at (?<javaClass>[\\w.]+):(?<lineNumber>\\d+)"
+    | rex field=_raw "(?<stackTrace>(?s).*)"
+    | stats count by errorCode, javaClass, lineNumber, message, stackTrace
+    | sort -count
+  `;
+  
+  // Create search job
+  const createJob = await fetch(
+    `https://${splunkConfig.host}:${splunkConfig.port}/services/search/jobs`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${btoa(`${splunkConfig.username}:${splunkConfig.password}`)}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        search: searchQuery,
+        output_mode: 'json',
+        earliest_time: timeRange
+      })
+    }
+  );
+  
+  const jobData = await createJob.json();
+  const jobId = jobData.sid;
+  
+  // Poll for completion
+  await waitForJobCompletion(jobId);
+  
+  // Fetch results
+  const results = await fetch(
+    `https://${splunkConfig.host}:${splunkConfig.port}/services/search/jobs/${jobId}/results?output_mode=json`,
+    {
+      headers: {
+        'Authorization': `Basic ${btoa(`${splunkConfig.username}:${splunkConfig.password}`)}`
+      }
+    }
+  );
+  
+  return results.json();
+}
+
+async function waitForJobCompletion(jobId: string): Promise<void> {
+  let isComplete = false;
+  while (!isComplete) {
+    const status = await fetch(
+      `https://${splunkConfig.host}:${splunkConfig.port}/services/search/jobs/${jobId}`,
+      {
+        headers: {
+          'Authorization': `Basic ${btoa(`${splunkConfig.username}:${splunkConfig.password}`)}`
+        }
+      }
+    );
+    const data = await status.json();
+    isComplete = data.entry[0].content.isDone;
+    
+    if (!isComplete) await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+```
+
+### GitHub Integration
+
+```typescript
+// src/lib/integrations/github.ts
+export const githubConfig = {
+  token: process.env.GITHUB_TOKEN,
+  org: 'digicert',
+  serviceRepoMap: {
+    'CIS-Service': 'cis-service',
+    'Auth-Service': 'auth-service',
+    'Certificate-Service': 'certificate-service',
+    'Validation-Service': 'validation-service',
+    'API-Gateway': 'api-gateway'
+  }
+};
+
+export async function fetchSourceCode(
+  service: string,
+  filePath: string,
+  lineNumber: number
+) {
+  const repo = githubConfig.serviceRepoMap[service];
+  
+  const response = await fetch(
+    `https://api.github.com/repos/${githubConfig.org}/${repo}/contents/${filePath}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${githubConfig.token}`,
+        'Accept': 'application/vnd.github.v3.raw'
+      }
+    }
+  );
+  
+  const content = await response.text();
+  const lines = content.split('\n');
+  
+  // Extract context (10 lines before/after)
+  const startLine = Math.max(0, lineNumber - 10);
+  const endLine = Math.min(lines.length, lineNumber + 10);
+  const context = lines.slice(startLine, endLine);
+  
+  return {
+    filePath,
+    lineNumber,
+    content: context.join('\n'),
+    startLine,
+    endLine,
+    repo,
+    url: `https://github.com/${githubConfig.org}/${repo}/blob/main/${filePath}#L${lineNumber}`
+  };
+}
+```
+
+### AI Integration (OpenAI)
+
+```typescript
+// src/lib/integrations/ai.ts
+export const aiConfig = {
+  openaiKey: process.env.OPENAI_API_KEY,
+  model: 'gpt-4-turbo-preview'
+};
+
+export async function analyzeError(
+  errorMessage: string,
+  codeContext: string,
+  stackTrace: string
+) {
+  const prompt = `
+You are an expert DevOps engineer analyzing a production error.
+
+Error: ${errorMessage}
+Stack Trace: ${stackTrace}
+Code Context:
+${codeContext}
+
+Provide JSON response:
+{
+  "rootCause": "explanation",
+  "inferredLocation": "File.java:line",
+  "confidence": "high|medium|low",
+  "affectedComponent": "component name",
+  "relatedLocations": ["location1", "location2"]
+}
+`;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${aiConfig.openaiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: aiConfig.model,
+      messages: [
+        { role: 'system', content: 'You are an expert DevOps engineer.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+      response_format: { type: 'json_object' }
+    })
+  });
+  
+  const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+}
+
+export async function generateSolution(
+  errorPattern: string,
+  rootCause: string
+) {
+  const prompt = `
+Generate step-by-step solution for:
+Error: ${errorPattern}
+Root Cause: ${rootCause}
+
+Return JSON:
+{
+  "steps": ["step1", "step2", ...],
+  "codeChanges": "code snippet",
+  "testing": "how to test",
+  "prevention": "how to prevent"
+}
+`;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${aiConfig.openaiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: aiConfig.model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      response_format: { type: 'json_object' }
+    })
+  });
+  
+  const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+}
+```
+
+### SOP Database Schema
+
+```sql
+-- PostgreSQL schema for historical solutions
+CREATE TABLE historical_solutions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  error_pattern VARCHAR(500) NOT NULL,
+  service_name VARCHAR(100) NOT NULL,
+  root_cause_category VARCHAR(100),
+  
+  -- Solution details
+  solution_summary TEXT NOT NULL,
+  resolution_steps JSONB NOT NULL,
+  code_changes TEXT,
+  
+  -- Metadata
+  resolved_by VARCHAR(100),
+  resolved_at TIMESTAMP NOT NULL,
+  time_to_resolve INTERVAL,
+  
+  -- Effectiveness tracking
+  effectiveness_rating DECIMAL(5,2) DEFAULT 0.0,
+  times_applied INTEGER DEFAULT 0,
+  success_count INTEGER DEFAULT 0,
+  
+  -- Searchability
+  tags TEXT[],
+  embedding VECTOR(1536), -- For semantic search
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_error_pattern ON historical_solutions(error_pattern);
+CREATE INDEX idx_service_name ON historical_solutions(service_name);
+CREATE INDEX idx_effectiveness ON historical_solutions(effectiveness_rating DESC);
+```
+
+---
+
+## �🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
@@ -598,7 +1525,27 @@ For questions or issues:
 
 ---
 
-## 📸 Screenshots & Demo
+## � Additional Documentation
+
+For detailed technical implementation and integration guides:
+
+- **[Complete Flow Diagrams & Integration Guide](FLOWS_AND_DIAGRAMS.md)** - Comprehensive Mermaid diagrams showing all 6 system flows, end-to-end scenarios, data flow matrix, integration dependencies, environment setup, performance metrics, error handling, and security considerations
+
+### What's Inside FLOWS_AND_DIAGRAMS.md
+
+1. **System Flow Summary** - Visual representation of all 6 flows working together
+2. **Data Flow Matrix** - API endpoints, frequencies, cache strategies
+3. **Integration Dependencies** - Required and optional services diagram
+4. **Environment Setup** - Complete `.env.local` configuration
+5. **Integration Points** - Detailed reference for New Relic, Splunk, GitHub, OpenAI, SOP Database
+6. **Complete Example** - End-to-end walkthrough of production error spike handling
+7. **Performance Metrics** - Expected response times and caching strategies
+8. **Error Handling** - Fallback strategies for each integration
+9. **Security** - API key management, data privacy, access control
+
+---
+
+## �📸 Screenshots & Demo
 
 ### Main Dashboard
 ![Main Dashboard - RASS Score Gauge with component breakdown]
