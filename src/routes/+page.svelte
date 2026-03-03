@@ -13,9 +13,9 @@
   import ErrorInference from '$lib/components/ErrorInference.svelte';
   import HistoricalSolutions from '$lib/components/HistoricalSolutions.svelte';
   import TelemetryModal from '$lib/components/TelemetryModal.svelte';
-  import { dashboardData, rassScore, anomalies, recommendations, telemetry, refreshData, refreshing, splunkLogs, errorInferences, historicalSolutions, futurePrediction } from '$lib/stores';
+  import { dashboardData, rassScore, anomalies, recommendations, telemetry, refreshData, refreshing, splunkLogs, errorInferences, historicalSolutions, futurePrediction, futurePredictionConfig } from '$lib/stores';
   import { getCategoryColor } from '$lib/types';
-  import type { TelemetryMetric } from '$lib/types';
+  import type { FuturePredictionConfig, SplunkLogEntry, TelemetryMetric } from '$lib/types';
 
   let refreshInterval: ReturnType<typeof setInterval>;
   let lastUpdated = '';
@@ -33,6 +33,7 @@
 
   // Modal state for full telemetry view
   let showTelemetryDataModal = false;
+  let selectedTelemetryErrorLog: SplunkLogEntry | null = null;
 
   // Tab state for Insights & Alerts
   let activeInsightTab: 'anomalies' | 'recommendations' = 'anomalies';
@@ -103,6 +104,19 @@
 
   function closeTelemetryDataModal() {
     showTelemetryDataModal = false;
+  }
+
+  function handleLogErrorSelect(event: CustomEvent<SplunkLogEntry>) {
+    selectedTelemetryErrorLog = event.detail;
+    showTelemetryDataModal = true;
+  }
+
+  function clearTelemetryErrorFilter() {
+    selectedTelemetryErrorLog = null;
+  }
+
+  function handlePredictionConfigChange(event: CustomEvent<FuturePredictionConfig>) {
+    futurePredictionConfig.set(event.detail);
   }
 </script>
 
@@ -232,8 +246,12 @@
       AI-Powered Insights & Predictions
     </h2>
     <div class="prediction-grid">
-      <FuturePrediction prediction={$futurePrediction} />
-      <ServiceLogAnalysis logs={$splunkLogs} />
+      <FuturePrediction
+        prediction={$futurePrediction}
+        config={$futurePredictionConfig}
+        on:configChange={handlePredictionConfigChange}
+      />
+      <ServiceLogAnalysis logs={$splunkLogs} on:errorSelect={handleLogErrorSelect} />
     </div>
   </section>
 
@@ -301,6 +319,9 @@
 <TelemetryModal
   show={showTelemetryDataModal}
   telemetryData={$telemetry}
+  splunkLogs={$splunkLogs}
+  selectedErrorLog={selectedTelemetryErrorLog}
+  on:clearErrorFilter={clearTelemetryErrorFilter}
   on:close={closeTelemetryDataModal}
 />
 

@@ -152,9 +152,15 @@ export interface HistoricalSolution {
 }
 
 // Future Prediction Types
+export interface FuturePredictionConfig {
+  requests: number;
+  pods: number;
+}
+
 export interface FuturePrediction {
   currentRPS: number;
   predictedRPS: number;
+  pods: number;
   currentScore: number;
   predictedScore: number;
   breakdown: {

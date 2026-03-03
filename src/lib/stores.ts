@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import type { DashboardData, SplunkLogEntry, ErrorInference, HistoricalSolution, FuturePrediction } from './types';
+import type { DashboardData, SplunkLogEntry, ErrorInference, HistoricalSolution, FuturePrediction, FuturePredictionConfig } from './types';
 import { mockDashboardData, mockSplunkLogs, mockErrorInferences, mockHistoricalSolutions, calculateFuturePrediction } from './mockData';
 
 // Main dashboard data store
@@ -17,8 +17,16 @@ export const recommendations = derived(dashboardData, ($d) => $d.recommendations
 export const telemetry = derived(dashboardData, ($d) => $d.telemetry);
 export const services = derived(dashboardData, ($d) => $d.services);
 
+export const futurePredictionConfig = writable<FuturePredictionConfig>({
+  requests: Math.round((mockDashboardData.telemetry.requestsPerSec?.current || 12000) * 2),
+  pods: 4
+});
+
 // Future prediction derived store
-export const futurePrediction = derived(dashboardData, ($d) => calculateFuturePrediction($d));
+export const futurePrediction = derived(
+  [dashboardData, futurePredictionConfig],
+  ([$d, $config]) => calculateFuturePrediction($d, $config)
+);
 
 // UI state
 export const selectedCategory = writable<string>('all');

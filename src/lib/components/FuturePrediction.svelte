@@ -1,10 +1,15 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import type { FuturePrediction } from '$lib/types';
   import { getScoreColor } from '$lib/types';
+  import type { FuturePredictionConfig } from '$lib/types';
   import { tweened } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
 
   export let prediction: FuturePrediction;
+  export let config: FuturePredictionConfig;
+
+  const dispatch = createEventDispatcher<{ configChange: FuturePredictionConfig }>();
 
   const animatedCurrent = tweened(0, { duration: 1200, easing: cubicOut });
   const animatedPredicted = tweened(0, { duration: 1500, easing: cubicOut });
@@ -16,6 +21,20 @@
 
   $: scoreChange = prediction.predictedScore - prediction.currentScore;
   $: changePercent = ((scoreChange / prediction.currentScore) * 100).toFixed(1);
+
+  function emitConfigChange(next: FuturePredictionConfig) {
+    dispatch('configChange', next);
+  }
+
+  function handleRequestsInput(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    emitConfigChange({ ...config, requests: Math.max(1, Math.round(value || 1)) });
+  }
+
+  function handlePodsInput(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    emitConfigChange({ ...config, pods: Math.max(1, Math.round(value || 1)) });
+  }
 </script>
 
 <div class="future-prediction-panel">
@@ -28,6 +47,29 @@
       <span class="material-icons">speed</span>
       <span>{prediction.currentRPS.toLocaleString()} → {prediction.predictedRPS.toLocaleString()} RPS</span>
     </div>
+  </div>
+
+  <div class="config-controls">
+    <label class="control-field">
+      <span>Target Requests</span>
+      <input
+        type="number"
+        min="1"
+        step="100"
+        value={config.requests}
+        on:input={handleRequestsInput}
+      />
+    </label>
+    <label class="control-field">
+      <span>Pods</span>
+      <input
+        type="number"
+        min="1"
+        step="1"
+        value={config.pods}
+        on:input={handlePodsInput}
+      />
+    </label>
   </div>
 
   <div class="prediction-content">
@@ -49,7 +91,7 @@
       </div>
       
       <div class="score-box predicted">
-        <span class="score-label">Predicted @ 2x</span>
+        <span class="score-label">Predicted @ Target</span>
         <span class="score-value" style="color: {getScoreColor(prediction.predictedScore)}">
           {Math.round($animatedPredicted)}
         </span>
@@ -167,6 +209,41 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+  }
+
+  .config-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .control-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .control-field span {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .control-field input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 6px;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .control-field input:focus {
+    outline: none;
+    border-color: rgba(171, 71, 188, 0.6);
+    box-shadow: 0 0 0 2px rgba(171, 71, 188, 0.2);
   }
 
   .score-comparison {
@@ -357,6 +434,10 @@
     }
 
     .breakdown-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .config-controls {
       grid-template-columns: 1fr;
     }
   }
