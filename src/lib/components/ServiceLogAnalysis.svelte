@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import type { SplunkLogEntry } from '$lib/types';
   import { getLogLevelColor } from '$lib/types';
 
   export let logs: SplunkLogEntry[] = [];
   export let selectedService: string = 'all';
+
+  const dispatch = createEventDispatcher<{ errorSelect: SplunkLogEntry }>();
 
   let expandedLog: string | null = null;
 
@@ -15,6 +18,11 @@
 
   function toggleExpand(logId: string) {
     expandedLog = expandedLog === logId ? null : logId;
+  }
+
+  function handleErrorClick(event: MouseEvent, log: SplunkLogEntry) {
+    event.stopPropagation();
+    dispatch('errorSelect', log);
   }
 
   function getTimeAgo(timestamp: string): string {
@@ -72,7 +80,14 @@
           </div>
           
           <div class="log-message">
-            <code>{log.errorCode ? `[${log.errorCode}] ` : ''}{log.message}</code>
+            <button
+              class="error-link"
+              type="button"
+              on:click={(event) => handleErrorClick(event, log)}
+              aria-label="Filter live telemetry for this error"
+            >
+              <code>{log.errorCode ? `[${log.errorCode}] ` : ''}{log.message}</code>
+            </button>
           </div>
 
           {#if expandedLog === log.id}
@@ -263,6 +278,19 @@
     margin-top: 0.5rem;
   }
 
+  .error-link {
+    all: unset;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .error-link:focus-visible {
+    outline: 2px solid rgba(255, 152, 0, 0.7);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
   .log-message code {
     font-size: 0.75rem;
     color: #f48fb1;
@@ -271,6 +299,12 @@
     border-radius: 4px;
     display: block;
     word-break: break-all;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .error-link:hover code {
+    background: rgba(244, 143, 177, 0.18);
+    color: #f8bbd0;
   }
 
   .log-details {

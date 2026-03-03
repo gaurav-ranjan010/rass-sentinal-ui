@@ -1,5 +1,5 @@
 // RASS Sentinel Mock Data
-import type { DashboardData, TelemetryDataPoint, SplunkLogEntry, ErrorInference, HistoricalSolution, FuturePrediction } from './types';
+import type { DashboardData, TelemetryDataPoint, SplunkLogEntry, ErrorInference, HistoricalSolution, FuturePrediction, FuturePredictionConfig } from './types';
 
 function generateHistory(baseValue: number, variance: number, count: number = 24): TelemetryDataPoint[] {
   const now = new Date();
@@ -428,13 +428,20 @@ export const mockHistoricalSolutions: HistoricalSolution[] = [
   }
 ];
 
-// Calculate Future RASS Prediction based on 2x RPS
-export function calculateFuturePrediction(currentData: DashboardData): FuturePrediction {
-  const currentRPS = currentData.telemetry.requestsPerSec?.current || 12000;
-  const predictedRPS = currentRPS * 2;
-  
-  // Simulate degradation at higher load
-  const loadFactor = 1.8; // Impact multiplier for doubling load
+// Calculate Future RASS Prediction based on configurable load and capacity
+export function calculateFuturePrediction(
+  currentData: DashboardData,
+  config?: FuturePredictionConfig
+): FuturePrediction {
+  const baselineRPS = currentData.telemetry.requestsPerSec?.current || 12000;
+  const currentRPS = Math.max(1, Math.round(baselineRPS));
+  const targetRPS = config?.requests ?? baselineRPS * 2;
+  const pods = Math.max(1, Math.round(config?.pods ?? 4));
+  const predictedRPS = Math.max(1, Math.round(targetRPS));
+
+  const baselinePods = 4;
+  const effectiveLoadMultiplier = (predictedRPS / Math.max(currentRPS, 1)) / (pods / baselinePods);
+  const normalizedLoad = Math.max(1, effectiveLoadMultiplier);
   
   const currentScore = currentData.rassScore.overall;
   const reliability = currentData.rassScore.reliability;
@@ -442,10 +449,15 @@ export function calculateFuturePrediction(currentData: DashboardData): FuturePre
   const scalability = currentData.rassScore.scalability;
   const security = currentData.rassScore.security;
   
+  const extraLoad = normalizedLoad - 1;
+  const scalabilityDrop = Math.min(0.65, extraLoad * 0.38);
+  const reliabilityDrop = Math.min(0.45, extraLoad * 0.2);
+  const availabilityDrop = Math.min(0.25, extraLoad * 0.1);
+
   // Scalability takes biggest hit, then reliability, availability less affected
-  const predictedScalability = Math.max(20, scalability - (scalability * 0.35));
-  const predictedReliability = Math.max(30, reliability - (reliability * 0.15));
-  const predictedAvailability = Math.max(40, availability - (availability * 0.08));
+  const predictedScalability = Math.max(20, scalability - (scalability * scalabilityDrop));
+  const predictedReliability = Math.max(30, reliability - (reliability * reliabilityDrop));
+  const predictedAvailability = Math.max(40, availability - (availability * availabilityDrop));
   const predictedSecurity = security; // Security doesn't change with load
   
   const predictedScore = Math.round(
@@ -457,14 +469,15 @@ export function calculateFuturePrediction(currentData: DashboardData): FuturePre
   
   if (predictedScalability < 50) {
     risks.push('Scalability will drop below acceptable threshold');
-    recommendations.push('Scale horizontally: Add 4-6 more app nodes before load increase');
+    recommendations.push('Scale horizontally: Add more pods before applying higher request volume');
   }
   if (predictedReliability < 60) {
-    risks.push('Error rate likely to exceed 8% at 2x load');
+    const loadRatio = (predictedRPS / Math.max(currentRPS, 1)).toFixed(1);
+    risks.push(`Error rate likely to exceed 8% at ${loadRatio}x load`);
     recommendations.push('Implement circuit breakers on all external dependencies');
   }
   if (currentData.telemetry.cpuUsage?.current > 70) {
-    risks.push('CPU exhaustion risk at 2x RPS - currently at ' + currentData.telemetry.cpuUsage.current + '%');
+    risks.push(`CPU exhaustion risk at ${predictedRPS.toLocaleString()} RPS - currently at ${currentData.telemetry.cpuUsage.current}%`);
     recommendations.push('Upgrade to compute-optimized instances (c5.2xlarge or higher)');
   }
   if (currentData.telemetry.memoryUsage?.current > 60) {
@@ -472,13 +485,14 @@ export function calculateFuturePrediction(currentData: DashboardData): FuturePre
     recommendations.push('Fix memory leak before scaling to prevent OOM cascades');
   }
   
-  recommendations.push('Enable auto-scaling with 65% CPU threshold');
+  recommendations.push(`Set HPA min pods to ${pods} with CPU threshold near 65%`);
   recommendations.push('Add read replicas for database to handle query load');
   recommendations.push('Implement request queuing with backpressure for graceful degradation');
   
   return {
     currentRPS,
     predictedRPS,
+    pods,
     currentScore,
     predictedScore,
     breakdown: {

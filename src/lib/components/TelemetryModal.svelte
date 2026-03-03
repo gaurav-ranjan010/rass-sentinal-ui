@@ -2,10 +2,12 @@
   import { createEventDispatcher } from 'svelte';
   import TelemetryChart from './TelemetryChart.svelte';
   import TelemetryDetailModal from './TelemetryDetailModal.svelte';
-  import type { TelemetryMetric } from '$lib/types';
+  import type { SplunkLogEntry, TelemetryDataPoint, TelemetryMetric } from '$lib/types';
 
   export let show: boolean = false;
   export let telemetryData: Record<string, TelemetryMetric>;
+  export let splunkLogs: SplunkLogEntry[] = [];
+  export let selectedErrorLog: SplunkLogEntry | null = null;
 
   const dispatch = createEventDispatcher();
 
@@ -16,6 +18,10 @@
 
   function close() {
     dispatch('close');
+  }
+
+  function clearErrorFilter() {
+    dispatch('clearErrorFilter');
   }
 
   function handleBackdropClick(event: MouseEvent) {
@@ -41,6 +47,74 @@
   function closeTelemetryDetailModal() {
     showTelemetryDetailModal = false;
   }
+
+  function createFilteredErrorHistory(
+    baseHistory: TelemetryDataPoint[],
+    logs: SplunkLogEntry[],
+    selected: SplunkLogEntry | null
+  ): TelemetryDataPoint[] {
+    if (!selected || !baseHistory?.length || !logs?.length) {
+      return baseHistory;
+    }
+
+    const errorLogs = logs.filter((log) => log.level === 'ERROR' || log.level === 'FATAL');
+
+    const matchingLogs = errorLogs.filter((log) => {
+      if (selected.errorCode) {
+        return log.errorCode === selected.errorCode;
+      }
+      return log.id === selected.id || log.service === selected.service;
+    });
+
+    if (!matchingLogs.length) {
+      return baseHistory;
+    }
+
+    const totalErrorFrequency = Math.max(
+      errorLogs.reduce((sum, log) => sum + Math.max(0, log.frequency), 0),
+      1
+    );
+    const matchingFrequency = matchingLogs.reduce((sum, log) => sum + Math.max(0, log.frequency), 0);
+    const frequencyShare = Math.max(0.05, Math.min(1, matchingFrequency / totalErrorFrequency));
+
+    return baseHistory.map((point) => {
+      const pointTime = new Date(point.timestamp).getTime();
+
+      const influence = matchingLogs.reduce((sum, log) => {
+        const logTime = new Date(log.timestamp).getTime();
+        const hoursDiff = Math.abs(pointTime - logTime) / 3600000;
+        const timeWeight = Math.exp(-(hoursDiff * hoursDiff) / 6);
+        return sum + timeWeight;
+      }, 0);
+
+      const normalizedInfluence = Math.min(1, influence);
+      const relevance = 0.45 + normalizedInfluence * 0.55;
+      const filteredValue = point.value * frequencyShare * relevance;
+
+      return {
+        ...point,
+        value: Math.round(filteredValue * 100) / 100
+      };
+    });
+  }
+
+  $: filteredErrorHistory = telemetryData?.errorRate
+    ? createFilteredErrorHistory(telemetryData.errorRate.history, splunkLogs, selectedErrorLog)
+    : [];
+
+  $: filteredErrorCurrent = filteredErrorHistory.length > 0
+    ? filteredErrorHistory[filteredErrorHistory.length - 1].value
+    : telemetryData?.errorRate?.current;
+
+  $: filteredErrorStatus = telemetryData?.errorRate
+    ? filteredErrorCurrent > telemetryData.errorRate.threshold
+      ? 'critical'
+      : telemetryData.errorRate.status
+    : 'healthy';
+
+  $: errorFilterLabel = selectedErrorLog
+    ? `${selectedErrorLog.service}${selectedErrorLog.errorCode ? ` • ${selectedErrorLog.errorCode}` : ''}`
+    : '';
 </script>
 
 {#if show}
@@ -51,7 +125,16 @@
       <div class="modal-header">
         <div class="header-title">
           <span class="material-icons">show_chart</span>
-          <h2>Live Telemetry Data</h2>
+          <div class="header-text">
+            <h2>Live Telemetry Data</h2>
+            {#if selectedErrorLog}
+              <div class="filter-badge">
+                <span class="material-icons">filter_alt</span>
+                <span>Filtered Error Rate: {errorFilterLabel}</span>
+                <button type="button" class="clear-filter-btn" on:click={clearErrorFilter}>Clear</button>
+              </div>
+            {/if}
+          </div>
         </div>
         <button class="close-btn" on:click={close}>
           <span class="material-icons">close</span>
@@ -62,12 +145,12 @@
         <div class="telemetry-grid">
           {#if telemetryData.errorRate}
             <TelemetryChart
-              data={telemetryData.errorRate.history}
+              data={filteredErrorHistory}
               label={telemetryData.errorRate.name}
               unit={telemetryData.errorRate.unit}
-              current={telemetryData.errorRate.current}
+              current={filteredErrorCurrent}
               threshold={telemetryData.errorRate.threshold}
-              status={telemetryData.errorRate.status}
+              status={filteredErrorStatus}
               color="#f44336"
               clickable={true}
               on:click={handleTelemetryClick}
@@ -191,8 +274,14 @@
 
   .header-title {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
+  }
+
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
   }
 
   .header-title .material-icons {
@@ -205,6 +294,37 @@
     font-size: 1.25rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.95);
+  }
+
+  .filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(244, 67, 54, 0.12);
+    border: 1px solid rgba(244, 67, 54, 0.45);
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .filter-badge .material-icons {
+    font-size: 14px;
+    color: #f48fb1;
+  }
+
+  .clear-filter-btn {
+    border: none;
+    background: transparent;
+    color: #ffccbc;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .clear-filter-btn:hover {
+    color: #ffffff;
   }
 
   .close-btn {
