@@ -39,7 +39,7 @@
   <div class="panel-header">
     <div class="header-title">
       <span class="material-icons">article</span>
-      <h3>Splunk Log Analysis</h3>
+      <h3>Most Frequent Errors</h3>
     </div>
     <select bind:value={selectedService} class="service-filter">
       {#each services as service}

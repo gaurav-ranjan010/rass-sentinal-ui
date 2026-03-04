@@ -117,38 +117,40 @@
       {/each}
     </div>
 
-    <!-- Risks -->
-    {#if prediction.risks.length > 0}
-      <div class="risks-section">
+    <div class="risk-recommendation-grid">
+      <!-- Risks -->
+      {#if prediction.risks.length > 0}
+        <div class="risks-section">
+          <h4>
+            <span class="material-icons">warning</span>
+            Identified Risks
+          </h4>
+          <ul class="risk-list">
+            {#each prediction.risks as risk}
+              <li>
+                <span class="material-icons">error_outline</span>
+                {risk}
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+
+      <!-- Recommendations -->
+      <div class="recommendations-section">
         <h4>
-          <span class="material-icons">warning</span>
-          Identified Risks
+          <span class="material-icons">lightbulb</span>
+          Recommendations
         </h4>
-        <ul class="risk-list">
-          {#each prediction.risks as risk}
+        <ul class="recommendation-list">
+          {#each prediction.recommendations.slice(0, 4) as rec}
             <li>
-              <span class="material-icons">error_outline</span>
-              {risk}
+              <span class="material-icons">check_circle</span>
+              {rec}
             </li>
           {/each}
         </ul>
       </div>
-    {/if}
-
-    <!-- Recommendations -->
-    <div class="recommendations-section">
-      <h4>
-        <span class="material-icons">lightbulb</span>
-        Scaling Recommendations
-      </h4>
-      <ul class="recommendation-list">
-        {#each prediction.recommendations.slice(0, 4) as rec}
-          <li>
-            <span class="material-icons">check_circle</span>
-            {rec}
-          </li>
-        {/each}
-      </ul>
     </div>
   </div>
 </div>
@@ -365,6 +367,12 @@
     font-size: 0.7rem;
   }
 
+  .risk-recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
   .risks-section, .recommendations-section {
     background: rgba(255, 255, 255, 0.02);
     padding: 0.75rem;
@@ -434,6 +442,10 @@
     }
 
     .breakdown-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .risk-recommendation-grid {
       grid-template-columns: 1fr;
     }
 
