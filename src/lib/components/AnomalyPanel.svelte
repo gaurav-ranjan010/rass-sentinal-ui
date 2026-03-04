@@ -23,7 +23,7 @@
   <div class="panel-header">
     <div class="header-left">
       <span class="material-icons header-icon">warning</span>
-      <h2>Anomaly Detection</h2>
+      <h2>Error Trends</h2>
     </div>
     <span class="anomaly-count">{anomalies.length} detected</span>
   </div>

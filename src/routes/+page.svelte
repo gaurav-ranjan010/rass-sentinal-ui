@@ -35,9 +35,6 @@
   let showTelemetryDataModal = false;
   let selectedTelemetryErrorLog: SplunkLogEntry | null = null;
 
-  // Tab state for Insights & Alerts
-  let activeInsightTab: 'anomalies' | 'recommendations' = 'anomalies';
-
   // Category to telemetry mapping
   const categoryMetrics: Record<string, string[]> = {
     reliability: ['errorRate', 'latencyP99', 'latencyP50'],
@@ -146,36 +143,40 @@
     </div>
   </div>
 
-  <!-- Hero Section: RASS Score -->
-  <section class="hero-section">
+  <!-- Diagnostics -->
+  <section class="diagnostics-section">
+    <h2 class="section-title">
+      <span class="material-icons">analytics</span>
+      Diagnostics - Current Breakdown
+    </h2>
     <div class="hero-content">
       <div class="main-gauge">
-        <HealthScoreGauge score={$rassScore.overall} label="RASS Score" size={240} />
+        <HealthScoreGauge score={$rassScore.overall} label="RASS Score" size={200} />
       </div>
       <div class="component-scores">
         <div class="component-card" style="border-color: {getCategoryColor('reliability')}">
-          <MiniGauge score={$rassScore.reliability} size={80} color={getCategoryColor('reliability')} />
+          <MiniGauge score={$rassScore.reliability} size={72} color={getCategoryColor('reliability')} />
           <div class="component-info">
             <span class="component-label">Reliability</span>
             <span class="component-desc">Errors, Latency</span>
           </div>
         </div>
         <div class="component-card" style="border-color: {getCategoryColor('availability')}">
-          <MiniGauge score={$rassScore.availability} size={80} color={getCategoryColor('availability')} />
+          <MiniGauge score={$rassScore.availability} size={72} color={getCategoryColor('availability')} />
           <div class="component-info">
             <span class="component-label">Availability</span>
             <span class="component-desc">Uptime, Response</span>
           </div>
         </div>
         <div class="component-card" style="border-color: {getCategoryColor('scalability')}">
-          <MiniGauge score={$rassScore.scalability} size={80} color={getCategoryColor('scalability')} />
+          <MiniGauge score={$rassScore.scalability} size={72} color={getCategoryColor('scalability')} />
           <div class="component-info">
             <span class="component-label">Scalability</span>
             <span class="component-desc">CPU, Memory</span>
           </div>
         </div>
         <div class="component-card" style="border-color: {getCategoryColor('security')}">
-          <MiniGauge score={$rassScore.security} size={80} color={getCategoryColor('security')} />
+          <MiniGauge score={$rassScore.security} size={72} color={getCategoryColor('security')} />
           <div class="component-info">
             <span class="component-label">Security</span>
             <span class="component-desc">Vulnerabilities</span>
@@ -183,14 +184,6 @@
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- RASS Metrics Cards -->
-  <section class="metrics-section">
-    <h2 class="section-title">
-      <span class="material-icons">analytics</span>
-      RASS Component Breakdown
-    </h2>
     <div class="metrics-grid">
       <MetricCard
         title="Reliability"
@@ -239,11 +232,11 @@
     </div>
   </section>
 
-  <!-- Future Prediction & Log Analysis -->
+  <!-- Prediction -->
   <section class="prediction-section">
     <h2 class="section-title">
       <span class="material-icons">auto_graph</span>
-      AI-Powered Insights & Predictions
+      Prediction - Modify Load / Number of Pods
     </h2>
     <div class="prediction-grid">
       <FuturePrediction
@@ -251,57 +244,48 @@
         config={$futurePredictionConfig}
         on:configChange={handlePredictionConfigChange}
       />
-      <ServiceLogAnalysis logs={$splunkLogs} on:errorSelect={handleLogErrorSelect} />
     </div>
   </section>
 
-  <!-- Error Inference & Historical Solutions -->
-  <section class="analysis-section">
+  <!-- Common Errors & Root Causes -->
+  <section class="code-analysis-section">
     <h2 class="section-title">
       <span class="material-icons">troubleshoot</span>
-      Root Cause Analysis & Resolution History
+      Intelligent Analysis (Code)
     </h2>
-    <div class="analysis-grid">
+    <div class="code-analysis-grid">
+      <ServiceLogAnalysis logs={$splunkLogs} on:errorSelect={handleLogErrorSelect} />
       <ErrorInference inferences={$errorInferences} />
+    </div>
+  </section>
+
+  <!-- Suggestions (Code Focused) -->
+  <section class="suggestions-section">
+    <h2 class="section-title">
+      <span class="material-icons">tips_and_updates</span>
+      Intelligent Insights (Code Focused)
+    </h2>
+    <div class="suggestions-grid">
       <HistoricalSolutions solutions={$historicalSolutions} />
     </div>
   </section>
 
-  <!-- Intelligent Insights & Alerts (Tabbed) -->
+  <!-- Intelligent Insights & Alerts (Infrastructure) -->
   <section class="insights-section">
     <div class="insights-header">
       <div class="header-left">
         <span class="material-icons">insights</span>
-        <h2>Intelligent Insights & Alerts</h2>
-      </div>
-      <div class="tab-controls">
-        <button 
-          class="tab-btn" 
-          class:active={activeInsightTab === 'anomalies'}
-          on:click={() => activeInsightTab = 'anomalies'}
-        >
-          <span class="material-icons">warning</span>
-          Anomaly Detection
-          <span class="badge">{$anomalies.length}</span>
-        </button>
-        <button 
-          class="tab-btn" 
-          class:active={activeInsightTab === 'recommendations'}
-          on:click={() => activeInsightTab = 'recommendations'}
-        >
-          <span class="material-icons">lightbulb</span>
-          Smart Recommendations
-          <span class="badge">{$recommendations.length}</span>
-        </button>
+        <h2>Intelligent Analysis & Insights (Infrastructure)</h2>
       </div>
     </div>
     
-    <div class="insights-content">
-      {#if activeInsightTab === 'anomalies'}
+    <div class="insights-content insights-grid">
+      <div class="insight-panel">
         <AnomalyPanel anomalies={$anomalies} />
-      {:else}
+      </div>
+      <div class="insight-panel">
         <RecommendationsPanel recommendations={$recommendations} />
-      {/if}
+      </div>
     </div>
   </section>
 </main>
@@ -456,8 +440,8 @@
     to { transform: rotate(360deg); }
   }
 
-  /* Hero Section */
-  .hero-section {
+  /* Diagnostics Section */
+  .diagnostics-section {
     margin-bottom: 2rem;
   }
 
@@ -465,8 +449,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4rem;
-    padding: 2rem;
+    gap: 2rem;
+    padding: 1.25rem;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
@@ -532,11 +516,6 @@
     color: rgba(255, 255, 255, 0.5);
   }
 
-  /* Metrics Section */
-  .metrics-section {
-    margin-bottom: 2rem;
-  }
-
   .metrics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -552,96 +531,44 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.5rem;
   }
 
   .insights-header .header-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
   .insights-header .header-left .material-icons {
     color: #ffa726;
-    font-size: 28px;
+    font-size: 22px;
   }
 
   .insights-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.95);
     margin: 0;
-  }
-
-  .tab-controls {
-    display: flex;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.4rem;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.6);
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    position: relative;
-  }
-
-  .tab-btn .material-icons {
-    font-size: 18px;
-  }
-
-  .tab-btn .badge {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    padding: 0.15rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    min-width: 24px;
-    text-align: center;
-  }
-
-  .tab-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .tab-btn.active {
-    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15) 0%, rgba(251, 140, 0, 0.15) 100%);
-    color: #ffb74d;
-    border: 1px solid rgba(255, 167, 38, 0.3);
-  }
-
-  .tab-btn.active .badge {
-    background: rgba(255, 167, 38, 0.2);
-    color: #ffb74d;
   }
 
   .insights-content {
     background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(20, 20, 35, 0.98) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem;
   }
 
   .insights-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .insight-panel {
+    min-width: 0;
   }
 
   /* Prediction Section */
@@ -655,21 +582,33 @@
     gap: 1.5rem;
   }
 
-  /* Analysis Section */
-  .analysis-section {
+  /* Code Analysis Section */
+  .code-analysis-section {
     margin-bottom: 2rem;
   }
 
-  .analysis-grid {
+  .code-analysis-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Suggestions Section */
+  .suggestions-section {
+    margin-bottom: 2rem;
+  }
+
+  .suggestions-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
   }
 
   /* Responsive - Tablet */
   @media (max-width: 1200px) {
     .prediction-grid,
-    .analysis-grid {
+    .code-analysis-grid,
+    .insights-grid {
       grid-template-columns: 1fr;
     }
   }
@@ -678,16 +617,12 @@
   @media (max-width: 900px) {
     .hero-content {
       flex-direction: column;
-      gap: 2rem;
+      gap: 1rem;
     }
 
     .component-scores {
       grid-template-columns: repeat(2, 1fr);
       width: 100%;
-    }
-
-    .insights-grid {
-      grid-template-columns: 1fr;
     }
 
     .metrics-grid {
@@ -697,17 +632,6 @@
     .insights-header {
       flex-direction: column;
       align-items: flex-start;
-    }
-
-    .tab-controls {
-      width: 100%;
-    }
-
-    .tab-btn {
-      flex: 1;
-      justify-content: center;
-      font-size: 0.8rem;
-      padding: 0.5rem 0.75rem;
     }
   }
 
@@ -751,26 +675,11 @@
     }
 
     .main-gauge {
-      transform: scale(0.85);
+      transform: scale(0.8);
     }
 
     .insights-content {
       padding: 1rem;
-    }
-
-    .tab-btn {
-      font-size: 0.75rem;
-      padding: 0.5rem;
-      gap: 0.3rem;
-    }
-
-    .tab-btn .material-icons {
-      font-size: 16px;
-    }
-
-    .tab-btn .badge {
-      font-size: 0.65rem;
-      padding: 0.1rem 0.4rem;
     }
   }
 
@@ -781,7 +690,7 @@
     }
 
     .main-gauge {
-      transform: scale(0.75);
+      transform: scale(0.7);
     }
 
     .component-card {
