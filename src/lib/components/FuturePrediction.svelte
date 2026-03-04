@@ -155,89 +155,97 @@
 
 <style>
   .future-prediction-panel {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(20, 20, 35, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 1.5rem;
     height: 100%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
   }
 
   .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .header-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
   }
 
   .header-title .material-icons {
     color: #ab47bc;
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .header-title h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
   }
 
   .load-badge {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    background: rgba(171, 71, 188, 0.15);
-    border: 1px solid rgba(171, 71, 188, 0.3);
-    padding: 0.4rem 0.8rem;
+    gap: 0.5rem;
+    background: rgba(171, 71, 188, 0.12);
+    border: 1px solid rgba(171, 71, 188, 0.25);
+    padding: 0.45rem 0.9rem;
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: #ce93d8;
   }
 
   .load-badge .material-icons {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .prediction-content {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
   }
 
   .config-controls {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
   }
 
   .control-field {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.4rem;
   }
 
   .control-field span {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
   }
 
   .control-field input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: rgba(255, 255, 255, 0.9);
-    border-radius: 6px;
-    padding: 0.45rem 0.55rem;
-    font-size: 0.78rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.82rem;
   }
 
   .control-field input:focus {
@@ -250,28 +258,29 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 10px;
+    gap: 2rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 12px;
   }
 
   .score-box {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    min-width: 100px;
+    gap: 0.35rem;
+    padding: 1.25rem 1.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    min-width: 110px;
   }
 
   .score-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.6px;
+    font-weight: 500;
   }
 
   .score-value {
@@ -280,8 +289,8 @@
   }
 
   .rps-label {
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.45);
     font-family: 'Roboto Mono', monospace;
   }
 
@@ -289,20 +298,20 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   .arrow {
-    font-size: 28px;
-    color: rgba(255, 255, 255, 0.3);
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.35);
   }
 
   .change-badge {
-    background: rgba(76, 175, 80, 0.2);
+    background: rgba(76, 175, 80, 0.18);
     color: #81c784;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 5px;
+    font-size: 0.75rem;
     font-weight: 600;
   }
 
@@ -314,81 +323,88 @@
   .breakdown-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    gap: 1rem;
   }
 
   .breakdown-item {
-    background: rgba(255, 255, 255, 0.02);
-    padding: 0.75rem;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+    padding: 1rem;
+    border-radius: 10px;
   }
 
   .category-name {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 0.5rem;
     display: block;
+    font-weight: 500;
   }
 
   .breakdown-bar {
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
     position: relative;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
     overflow: hidden;
   }
 
   .bar-current {
     position: absolute;
     height: 100%;
-    border-radius: 3px;
+    border-radius: 4px;
     opacity: 0.4;
   }
 
   .bar-predicted {
     position: absolute;
     height: 100%;
-    border-radius: 3px;
+    border-radius: 4px;
   }
 
   .breakdown-values {
     display: flex;
     justify-content: flex-end;
-    gap: 0.3rem;
-    font-size: 0.75rem;
+    gap: 0.4rem;
+    font-size: 0.8rem;
     font-weight: 600;
   }
 
   .arrow-small {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.75rem;
   }
 
   .risks-section, .recommendations-section {
-    background: rgba(255, 255, 255, 0.02);
-    padding: 0.75rem;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .recommendations-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .risks-section h4, .recommendations-section h4 {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
+    gap: 0.5rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0 0 0.5rem 0;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0 0 0.65rem 0;
   }
 
   .risks-section h4 .material-icons {
     color: #ff9800;
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .recommendations-section h4 .material-icons {
     color: #4caf50;
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .risk-list, .recommendation-list {
@@ -397,30 +413,34 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.5rem;
+  }
+
+  .recommendation-list {
+    flex: 1;
   }
 
   .risk-list li, .recommendation-list li {
     display: flex;
     align-items: flex-start;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.4;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.5;
   }
 
   .risk-list li .material-icons {
     color: #ff5722;
-    font-size: 14px;
+    font-size: 16px;
     flex-shrink: 0;
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
   .recommendation-list li .material-icons {
     color: #66bb6a;
-    font-size: 14px;
+    font-size: 16px;
     flex-shrink: 0;
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
   @media (max-width: 600px) {

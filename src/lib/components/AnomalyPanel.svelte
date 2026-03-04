@@ -23,7 +23,7 @@
   <div class="panel-header">
     <div class="header-left">
       <span class="material-icons header-icon">warning</span>
-      <h2>Anomaly Detection</h2>
+      <h2>Infrastructural Error Trends</h2>
     </div>
     <span class="anomaly-count">{anomalies.length} detected</span>
   </div>
@@ -61,46 +61,49 @@
 
 <style>
   .anomaly-panel {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
 
   .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.025);
   }
 
   .header-left {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
   }
 
   .header-icon {
     color: #ff9800;
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .panel-header h2 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
   }
 
   .anomaly-count {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.55);
     background: rgba(255, 152, 0, 0.12);
-    padding: 3px 10px;
-    border-radius: 12px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 14px;
     font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
   }
 
   .anomaly-list {
@@ -109,13 +112,13 @@
   }
 
   .anomaly-item {
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     transition: background 0.2s ease;
   }
 
   .anomaly-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .anomaly-item:last-child {
@@ -126,72 +129,72 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.65rem;
   }
 
   .anomaly-meta {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
     flex-wrap: wrap;
   }
 
   .severity-badge {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 2px 8px;
-    border-radius: 4px;
+    letter-spacing: 0.6px;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
   }
 
   .category-badge {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 0.35rem;
     text-transform: capitalize;
   }
 
   .anomaly-id {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
     font-family: 'Roboto Mono', monospace;
   }
 
   .time-ago {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.45);
     white-space: nowrap;
   }
 
   .anomaly-metric {
     display: flex;
     align-items: baseline;
-    gap: 0.5rem;
-    margin-bottom: 0.4rem;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
   }
 
   .metric-name {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.85);
   }
 
   .metric-value {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     font-family: 'Roboto Mono', monospace;
   }
 
   .expected-range {
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
   }
 
   .anomaly-message {
     margin: 0;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.55);
-    line-height: 1.5;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
   }
 </style>

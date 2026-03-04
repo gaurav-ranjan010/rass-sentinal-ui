@@ -106,14 +106,15 @@
 
 <style>
   .metric-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 1.25rem;
-    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: default;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
 
   .metric-card::before {
@@ -129,10 +130,10 @@
   }
 
   .metric-card:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
   }
 
   .metric-card:hover::before {
@@ -142,19 +143,19 @@
   .card-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
   }
 
   .icon-wrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .metric-card:hover .icon-wrapper {
@@ -162,7 +163,7 @@
   }
 
   .icon-wrapper .material-icons {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .header-text {
@@ -172,22 +173,23 @@
 
   .header-text h3 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
   }
 
   .meta-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 2px;
+    gap: 0.6rem;
+    margin-top: 0.35rem;
   }
 
   .category-tag {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     font-weight: 500;
   }
 
@@ -201,22 +203,22 @@
   .trend-indicator.stable { color: #ff9800; }
 
   .score-badge {
-    font-size: 1.25rem;
+    font-size: 1.4rem;
     font-weight: 700;
     font-family: 'Roboto Mono', monospace;
-    padding: 4px 12px;
-    border-radius: 8px;
+    padding: 0.35rem 1rem;
+    border-radius: 10px;
     flex-shrink: 0;
   }
 
   .score-bar-track {
     position: relative;
     width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 2px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
     overflow: hidden;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .score-bar-fill {
@@ -224,7 +226,7 @@
     top: 0;
     left: 0;
     height: 100%;
-    border-radius: 2px;
+    border-radius: 3px;
     transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -232,10 +234,10 @@
     position: absolute;
     top: -2px;
     left: 0;
-    height: 8px;
-    border-radius: 4px;
-    filter: blur(4px);
-    opacity: 0.3;
+    height: 10px;
+    border-radius: 5px;
+    filter: blur(5px);
+    opacity: 0.4;
     transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -243,23 +245,23 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .level-text {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
   }
 
   .level-dots {
     display: flex;
-    gap: 3px;
+    gap: 4px;
   }
 
   .dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     transition: background 0.3s ease;
   }
@@ -267,26 +269,27 @@
   .details {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-top: 0.6rem;
+    padding-top: 0.875rem;
   }
 
   .detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .detail-label {
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.5);
   }
 
   .detail-value {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     font-family: 'Roboto Mono', monospace;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
+    font-weight: 500;
   }
 
   .metric-card.clickable {
@@ -294,8 +297,8 @@
   }
 
   .metric-card.clickable:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
     border-color: var(--card-color);
   }
 
@@ -308,17 +311,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
     transition: color 0.2s ease;
   }
 
   .click-hint .material-icons {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .metric-card.clickable:hover .click-hint {

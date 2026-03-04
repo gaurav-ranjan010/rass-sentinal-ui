@@ -35,9 +35,6 @@
   let showTelemetryDataModal = false;
   let selectedTelemetryErrorLog: SplunkLogEntry | null = null;
 
-  // Tab state for Insights & Alerts
-  let activeInsightTab: 'anomalies' | 'recommendations' = 'anomalies';
-
   // Category to telemetry mapping
   const categoryMetrics: Record<string, string[]> = {
     reliability: ['errorRate', 'latencyP99', 'latencyP50'],
@@ -185,123 +182,91 @@
     </div>
   </section>
 
-  <!-- RASS Metrics Cards -->
-  <section class="metrics-section">
+  <!-- Combined Section: RASS Breakdown & Predictions -->
+  <section class="combined-metrics-prediction-section">
     <h2 class="section-title">
       <span class="material-icons">analytics</span>
-      RASS Component Breakdown
+      RASS Component Breakdown & AI Predictions
     </h2>
-    <div class="metrics-grid">
-      <MetricCard
-        title="Reliability"
-        score={$rassScore.reliability}
-        category="reliability"
-        clickable={true}
-        on:click={handleCardClick}
-        details={[
-          { label: 'Error Rate', value: `${$telemetry.errorRate?.current.toFixed(2)}%` },
-          { label: 'P99 Latency', value: `${$telemetry.latencyP99?.current}ms` }
-        ]}
-      />
-      <MetricCard
-        title="Availability"
-        score={$rassScore.availability}
-        category="availability"
-        clickable={true}
-        on:click={handleCardClick}
-        details={[
-          { label: 'Uptime', value: `${$telemetry.uptime?.current.toFixed(2)}%` },
-          { label: 'Requests/sec', value: `${$telemetry.requestsPerSec?.current.toLocaleString()}` }
-        ]}
-      />
-      <MetricCard
-        title="Scalability"
-        score={$rassScore.scalability}
-        category="scalability"
-        clickable={true}
-        on:click={handleCardClick}
-        details={[
-          { label: 'CPU Usage', value: `${$telemetry.cpuUsage?.current}%` },
-          { label: 'Memory', value: `${$telemetry.memoryUsage?.current}%` }
-        ]}
-      />
-      <MetricCard
-        title="Security"
-        score={$rassScore.security}
-        category="security"
-        clickable={true}
-        on:click={handleCardClick}
-        details={[
-          { label: 'Open CVEs', value: `${$telemetry.openVulnerabilities?.current}` },
-          { label: 'Status', value: $telemetry.openVulnerabilities?.current > 0 ? 'Action Needed' : 'Secure' }
-        ]}
-      />
+    <div class="combined-grid">
+      <div class="metrics-grid">
+        <MetricCard
+          title="Reliability"
+          score={$rassScore.reliability}
+          category="reliability"
+          clickable={true}
+          on:click={handleCardClick}
+          details={[
+            { label: 'Error Rate', value: `${$telemetry.errorRate?.current.toFixed(2)}%` },
+            { label: 'P99 Latency', value: `${$telemetry.latencyP99?.current}ms` }
+          ]}
+        />
+        <MetricCard
+          title="Availability"
+          score={$rassScore.availability}
+          category="availability"
+          clickable={true}
+          on:click={handleCardClick}
+          details={[
+            { label: 'Uptime', value: `${$telemetry.uptime?.current.toFixed(2)}%` },
+            { label: 'Requests/sec', value: `${$telemetry.requestsPerSec?.current.toLocaleString()}` }
+          ]}
+        />
+        <MetricCard
+          title="Scalability"
+          score={$rassScore.scalability}
+          category="scalability"
+          clickable={true}
+          on:click={handleCardClick}
+          details={[
+            { label: 'CPU Usage', value: `${$telemetry.cpuUsage?.current}%` },
+            { label: 'Memory', value: `${$telemetry.memoryUsage?.current}%` }
+          ]}
+        />
+        <MetricCard
+          title="Security"
+          score={$rassScore.security}
+          category="security"
+          clickable={true}
+          on:click={handleCardClick}
+          details={[
+            { label: 'Open CVEs', value: `${$telemetry.openVulnerabilities?.current}` },
+            { label: 'Status', value: $telemetry.openVulnerabilities?.current > 0 ? 'Action Needed' : 'Secure' }
+          ]}
+        />
+      </div>
+      <div class="prediction-wrapper">
+        <FuturePrediction
+          prediction={$futurePrediction}
+          config={$futurePredictionConfig}
+          on:configChange={handlePredictionConfigChange}
+        />
+      </div>
     </div>
   </section>
 
-  <!-- Future Prediction & Log Analysis -->
-  <section class="prediction-section">
-    <h2 class="section-title">
-      <span class="material-icons">auto_graph</span>
-      AI-Powered Insights & Predictions
-    </h2>
-    <div class="prediction-grid">
-      <FuturePrediction
-        prediction={$futurePrediction}
-        config={$futurePredictionConfig}
-        on:configChange={handlePredictionConfigChange}
-      />
-      <ServiceLogAnalysis logs={$splunkLogs} on:errorSelect={handleLogErrorSelect} />
-    </div>
-  </section>
-
-  <!-- Error Inference & Historical Solutions -->
-  <section class="analysis-section">
+  <!-- Intelligent Code Analysis & Solutions -->
+  <section class="code-analysis-section">
     <h2 class="section-title">
       <span class="material-icons">troubleshoot</span>
-      Root Cause Analysis & Resolution History
+      Intelligent Code Analysis & Solutions
     </h2>
-    <div class="analysis-grid">
+    <div class="code-analysis-grid">
+      <ServiceLogAnalysis logs={$splunkLogs} on:errorSelect={handleLogErrorSelect} />
       <ErrorInference inferences={$errorInferences} />
       <HistoricalSolutions solutions={$historicalSolutions} />
     </div>
   </section>
 
-  <!-- Intelligent Insights & Alerts (Tabbed) -->
+  <!-- Intelligent Infrastructure Insights -->
   <section class="insights-section">
-    <div class="insights-header">
-      <div class="header-left">
-        <span class="material-icons">insights</span>
-        <h2>Intelligent Insights & Alerts</h2>
-      </div>
-      <div class="tab-controls">
-        <button 
-          class="tab-btn" 
-          class:active={activeInsightTab === 'anomalies'}
-          on:click={() => activeInsightTab = 'anomalies'}
-        >
-          <span class="material-icons">warning</span>
-          Anomaly Detection
-          <span class="badge">{$anomalies.length}</span>
-        </button>
-        <button 
-          class="tab-btn" 
-          class:active={activeInsightTab === 'recommendations'}
-          on:click={() => activeInsightTab = 'recommendations'}
-        >
-          <span class="material-icons">lightbulb</span>
-          Smart Recommendations
-          <span class="badge">{$recommendations.length}</span>
-        </button>
-      </div>
-    </div>
-    
-    <div class="insights-content">
-      {#if activeInsightTab === 'anomalies'}
-        <AnomalyPanel anomalies={$anomalies} />
-      {:else}
-        <RecommendationsPanel recommendations={$recommendations} />
-      {/if}
+    <h2 class="section-title">
+      <span class="material-icons">insights</span>
+      Intelligent Infrastructure Insights
+    </h2>
+    <div class="insights-grid">
+      <AnomalyPanel anomalies={$anomalies} />
+      <RecommendationsPanel recommendations={$recommendations} />
     </div>
   </section>
 </main>
@@ -335,8 +300,8 @@
 
 <style>
   .dashboard {
-    padding: 1.5rem;
-    max-width: 1600px;
+    padding: 2rem;
+    max-width: 1800px;
     margin: 0 auto;
   }
 
@@ -344,11 +309,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    margin-bottom: 3rem;
+    backdrop-filter: blur(10px);
   }
 
   .status-info {
@@ -458,18 +424,19 @@
 
   /* Hero Section */
   .hero-section {
-    margin-bottom: 2rem;
+    margin-bottom: 3.5rem;
   }
 
   .hero-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4rem;
-    padding: 2rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    gap: 5rem;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   }
 
   .main-gauge {
@@ -479,24 +446,26 @@
   .component-scores {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   .component-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left-width: 3px;
-    border-radius: 10px;
-    transition: all 0.2s ease;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-left-width: 4px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .component-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.04);
+    transform: translateX(6px) translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
 
   .component-info {
@@ -507,221 +476,179 @@
 
   .component-label {
     font-weight: 600;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
   }
 
   .component-desc {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.25rem;
   }
 
   /* Section Titles */
   .section-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
+    gap: 0.75rem;
+    font-size: 1.35rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 1.75rem;
+    letter-spacing: 0.02em;
   }
 
   .section-title .material-icons {
-    font-size: 20px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.6);
   }
 
-  /* Metrics Section */
-  .metrics-section {
-    margin-bottom: 2rem;
+  /* Combined Metrics & Prediction Section */
+  .combined-metrics-prediction-section {
+    margin-bottom: 3.5rem;
+  }
+
+  .combined-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: stretch;
   }
 
   .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .prediction-wrapper {
+    display: flex;
+    flex-direction: column;
   }
 
   /* Insights Section */
   .insights-section {
-    margin-bottom: 2rem;
-  }
-
-  .insights-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .insights-header .header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .insights-header .header-left .material-icons {
-    color: #ffa726;
-    font-size: 28px;
-  }
-
-  .insights-header h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.95);
-    margin: 0;
-  }
-
-  .tab-controls {
-    display: flex;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.4rem;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.6);
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    position: relative;
-  }
-
-  .tab-btn .material-icons {
-    font-size: 18px;
-  }
-
-  .tab-btn .badge {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    padding: 0.15rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    min-width: 24px;
-    text-align: center;
-  }
-
-  .tab-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .tab-btn.active {
-    background: linear-gradient(135deg, rgba(255, 167, 38, 0.15) 0%, rgba(251, 140, 0, 0.15) 100%);
-    color: #ffb74d;
-    border: 1px solid rgba(255, 167, 38, 0.3);
-  }
-
-  .tab-btn.active .badge {
-    background: rgba(255, 167, 38, 0.2);
-    color: #ffb74d;
-  }
-
-  .insights-content {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(20, 20, 35, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
+    margin-bottom: 3.5rem;
   }
 
   .insights-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
   }
 
-  /* Prediction Section */
-  .prediction-section {
-    margin-bottom: 2rem;
+  /* Code Analysis Section */
+  .code-analysis-section {
+    margin-bottom: 3.5rem;
   }
 
-  .prediction-grid {
+  .code-analysis-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
   }
 
-  /* Analysis Section */
-  .analysis-section {
-    margin-bottom: 2rem;
+  /* Responsive - Large Desktop */
+  @media (max-width: 1600px) {
+    .hero-content {
+      gap: 4rem;
+    }
   }
 
-  .analysis-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 1.5rem;
+  /* Responsive - Desktop */
+  @media (max-width: 1400px) {
+    .dashboard {
+      padding: 1.5rem;
+    }
+
+    .combined-grid {
+      gap: 2rem;
+    }
+
+    .code-analysis-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
+    }
   }
 
   /* Responsive - Tablet */
   @media (max-width: 1200px) {
-    .prediction-grid,
-    .analysis-grid {
+    .combined-grid {
       grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    .code-analysis-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .insights-grid {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+
+    .hero-content {
+      gap: 3rem;
+      padding: 2.5rem;
     }
   }
 
   /* Responsive - Large Mobile */
   @media (max-width: 900px) {
+    .dashboard {
+      padding: 1.25rem;
+    }
+
+    .hero-section {
+      margin-bottom: 2.5rem;
+    }
+
     .hero-content {
       flex-direction: column;
-      gap: 2rem;
+      gap: 2.5rem;
+      padding: 2rem;
     }
 
     .component-scores {
       grid-template-columns: repeat(2, 1fr);
       width: 100%;
+      gap: 1.25rem;
     }
 
     .insights-grid {
       grid-template-columns: 1fr;
+      gap: 1.5rem;
     }
 
     .metrics-grid {
       grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
     }
 
-    .insights-header {
-      flex-direction: column;
-      align-items: flex-start;
+    .section-title {
+      font-size: 1.2rem;
     }
 
-    .tab-controls {
-      width: 100%;
-    }
-
-    .tab-btn {
-      flex: 1;
-      justify-content: center;
-      font-size: 0.8rem;
-      padding: 0.5rem 0.75rem;
+    .combined-metrics-prediction-section,
+    .code-analysis-section,
+    .insights-section {
+      margin-bottom: 2.5rem;
     }
   }
 
   /* Responsive - Mobile */
   @media (max-width: 600px) {
     .dashboard {
-      padding: 0.75rem;
+      padding: 1rem;
     }
 
     .top-bar {
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 1rem;
       text-align: center;
-      padding: 0.5rem;
+      padding: 0.75rem 1rem;
     }
 
     .status-info {
@@ -731,61 +658,83 @@
 
     .refresh-section {
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .telemetry-btn,
+    .refresh-btn {
+      width: 100%;
+      justify-content: center;
     }
 
     .component-scores {
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
     .metrics-grid {
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
     .section-title {
-      font-size: 0.9rem;
+      font-size: 1.1rem;
+    }
+
+    .section-title .material-icons {
+      font-size: 24px;
+    }
+
+    .hero-section {
+      margin-bottom: 2rem;
     }
 
     .hero-content {
-      padding: 1rem;
+      padding: 1.5rem;
+      gap: 2rem;
     }
 
     .main-gauge {
-      transform: scale(0.85);
+      transform: scale(0.9);
     }
 
-    .insights-content {
-      padding: 1rem;
+    .insights-grid {
+      grid-template-columns: 1fr;
     }
 
-    .tab-btn {
-      font-size: 0.75rem;
-      padding: 0.5rem;
-      gap: 0.3rem;
+    .combined-metrics-prediction-section,
+    .code-analysis-section,
+    .insights-section {
+      margin-bottom: 2rem;
     }
 
-    .tab-btn .material-icons {
-      font-size: 16px;
-    }
-
-    .tab-btn .badge {
-      font-size: 0.65rem;
-      padding: 0.1rem 0.4rem;
+    .combined-grid,
+    .code-analysis-grid {
+      gap: 1.5rem;
     }
   }
 
   /* Responsive - Small Mobile */
   @media (max-width: 400px) {
     .dashboard {
-      padding: 0.5rem;
+      padding: 0.75rem;
+    }
+
+    .hero-content {
+      padding: 1.25rem;
     }
 
     .main-gauge {
-      transform: scale(0.75);
+      transform: scale(0.8);
     }
 
     .component-card {
-      padding: 0.75rem;
+      padding: 1rem;
+    }
+
+    .section-title {
+      font-size: 1rem;
     }
   }
 </style>

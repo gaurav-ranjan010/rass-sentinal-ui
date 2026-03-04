@@ -67,46 +67,49 @@
 
 <style>
   .rec-panel {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
 
   .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.025);
   }
 
   .header-left {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
   }
 
   .header-icon {
     color: #ffd54f;
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .panel-header h2 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
   }
 
   .rec-count {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.55);
     background: rgba(255, 213, 79, 0.12);
-    padding: 3px 10px;
-    border-radius: 12px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 14px;
     font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
   }
 
   .rec-list {
@@ -115,13 +118,13 @@
   }
 
   .rec-item {
-    padding: 1.25rem;
+    padding: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     transition: background 0.2s ease;
   }
 
   .rec-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .rec-item:last-child {
@@ -130,14 +133,14 @@
 
   .rec-top {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 
   .rec-icon-wrap {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,7 +148,7 @@
   }
 
   .rec-icon-wrap .material-icons {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .rec-header {
@@ -156,76 +159,78 @@
   .rec-title-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
     flex-wrap: wrap;
   }
 
   .rec-title-row h3 {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
   }
 
   .priority-badge {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 2px 6px;
-    border-radius: 4px;
+    letter-spacing: 0.6px;
+    padding: 0.3rem 0.65rem;
+    border-radius: 6px;
   }
 
   .rec-desc {
-    margin: 4px 0 0;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.55);
-    line-height: 1.4;
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
   }
 
   .rec-details {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-left: 52px;
-    margin-bottom: 0.5rem;
+    gap: 0.65rem;
+    margin-left: 60px;
+    margin-bottom: 0.65rem;
   }
 
   .rec-detail {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.65rem;
     align-items: flex-start;
   }
 
   .detail-icon {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.35);
-    margin-top: 1px;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
   }
 
   .detail-label {
     display: block;
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+    font-weight: 500;
   }
 
   .detail-text {
     display: block;
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.65);
-    line-height: 1.4;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
   }
 
   .rec-footer {
-    margin-left: 52px;
+    margin-left: 60px;
   }
 
   .category-tag {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 0.35rem;
     text-transform: capitalize;
   }
 </style>
