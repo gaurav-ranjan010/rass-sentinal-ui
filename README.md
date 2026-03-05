@@ -10,6 +10,8 @@ RASS Sentinel is an advanced AI-powered monitoring dashboard that transforms raw
 
 **📊 [View Complete Flow Diagrams & Integration Guide →](FLOWS_AND_DIAGRAMS.md)**
 
+**🎤 [View Hackathon Presentation Slides →](https://digicert365-my.sharepoint.com/:p:/r/personal/atul_kumar_digicert_com/_layouts/15/Doc.aspx?sourcedoc=%7BD8CF4FAB-9F88-4067-A58F-221B160F2135%7D&file=hackathon_template_2026.pptx&action=edit&mobileredirect=true)**
+
 ---
 
 ## 📑 Table of Contents
